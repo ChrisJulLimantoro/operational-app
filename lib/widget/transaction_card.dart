@@ -1,0 +1,269 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:operational_app/helper/format_currency.dart';
+import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/theme/colors.dart';
+import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/item_card_detail.dart';
+
+class TransactionCard extends StatefulWidget {
+  final Transaction trans;
+
+  const TransactionCard({super.key, required this.trans});
+
+  @override
+  State<TransactionCard> createState() => _TransactionCardState();
+}
+
+class _TransactionCardState extends State<TransactionCard> {
+  late Transaction trans;
+
+  @override
+  void initState() {
+    super.initState();
+    trans = widget.trans; // Store the received parameter
+    debugPrint(trans.toString());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => {context.push('/transaction-detail', extra: trans)},
+        borderRadius: BorderRadius.circular(8),
+
+        child: Card(
+          color: Colors.white,
+          elevation: 1,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment
+                          .spaceBetween, // Ensures left-right alignment
+                  children: [
+                    // Transaction Code on the Left
+                    Text(trans.code, style: AppTextStyles.subheadingBlue),
+
+                    // Right-side status and button grouped together
+                    Row(
+                      children: [
+                        // Expandable Status Container
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12, // More padding for dynamic text
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.pinkTertiary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            trans.status == 0
+                                ? "Draft"
+                                : trans.status == 1
+                                ? "Pending"
+                                : trans.status == 2
+                                ? "Paid"
+                                : trans.status == 3
+                                ? "Taken"
+                                : "Cancel", // This text can expand dynamically
+                            style: AppTextStyles.labelPink,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ), // Space between status and button
+                        // Approve/Disapprove Button
+                        trans.approve == 0
+                            ? Container(
+                              height: 32,
+                              width: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.success,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: IconButton(
+                                icon: Icon(CupertinoIcons.check_mark),
+                                iconSize: 16.0,
+                                color: AppColors.textWhite,
+                                padding: EdgeInsets.all(0),
+                                onPressed: () {
+                                  debugPrint("Approve Button Clicked");
+                                },
+                              ),
+                            )
+                            : Container(
+                              height: 32,
+                              width: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.error,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: IconButton(
+                                icon: Icon(CupertinoIcons.xmark),
+                                iconSize: 16.0,
+                                color: AppColors.textWhite,
+                                padding: EdgeInsets.all(0),
+                                onPressed: () {
+                                  debugPrint("Approve Button Clicked");
+                                },
+                              ),
+                            ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Transaction Employee Name
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 4,
+                        children: [
+                          Text("Sales", style: AppTextStyles.labelPink),
+                          Text(
+                            trans.employee?.name ?? "-",
+                            style: AppTextStyles.bodyBlue,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 4,
+                        children: [
+                          Text("Customer", style: AppTextStyles.labelPink),
+                          Text(
+                            trans.customer?.name ?? "-",
+                            style: AppTextStyles.bodyBlue,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 4,
+                        children: [
+                          Text("Payment", style: AppTextStyles.labelPink),
+                          Text(
+                            trans.paymentMethod == 0
+                                ? "Cash"
+                                : trans.paymentMethod == 1
+                                ? "Debit"
+                                : "QRIS",
+                            style: AppTextStyles.bodyBlue,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Transaction Customer Name
+                  ],
+                ),
+                // Description / comment
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
+                  children: [
+                    Text("Comment", style: AppTextStyles.labelPink),
+                    Text(
+                      trans.comment,
+                      style: AppTextStyles.bodyBlue,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+                // Separator
+                const Divider(color: Colors.grey, thickness: 0.3),
+
+                // Sales Details (Only if Products Exist)
+                if (trans.transactionProducts.isNotEmpty) ...[
+                  Text("Penjualan", style: AppTextStyles.labelPink),
+                  Column(
+                    children:
+                        trans.transactionProducts
+                            .map(
+                              (product) => ItemCardDetail(
+                                name: product.name.split(' - ')[1],
+                                code: product.name.split(' - ')[0],
+                                totalPrice: product.totalPrice,
+                              ),
+                            )
+                            .toList(),
+                  ),
+                ],
+                if (trans.transactionOperations.isNotEmpty) ...[
+                  Text("Layanan Jasa", style: AppTextStyles.labelPink),
+                  Column(
+                    children:
+                        trans.transactionOperations
+                            .map(
+                              (operation) => ItemCardDetail(
+                                name: operation.name.split(' - ')[1],
+                                code: operation.name.split(' - ')[0],
+                                totalPrice: operation.totalPrice,
+                              ),
+                            )
+                            .toList(),
+                  ),
+                ],
+
+                // Separator
+                const Divider(color: Colors.grey, thickness: 0.3),
+                // Sub total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Subtotal", style: AppTextStyles.labelBlueItalic),
+                    Text(
+                      CurrencyHelper.formatRupiah(trans.subTotalPrice),
+                      style: AppTextStyles.labelPink,
+                    ),
+                  ],
+                ),
+                // Tax
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Tax", style: AppTextStyles.labelBlueItalic),
+                    Text(
+                      CurrencyHelper.formatRupiah(trans.taxPrice),
+                      style: AppTextStyles.labelPink,
+                    ),
+                  ],
+                ),
+                // Total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Total", style: AppTextStyles.subheadingBlue),
+                    Text(
+                      CurrencyHelper.formatRupiah(trans.totalPrice),
+                      style: AppTextStyles.subheadingBlue,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
