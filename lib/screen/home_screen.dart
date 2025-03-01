@@ -137,88 +137,87 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               /// Menu Section
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 28,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 28,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                      bottom: Radius.circular(16),
                     ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Menu Title
+                      Text(
+                        _selectedTabIndex == 0
+                            ? "Menu Master"
+                            : _selectedTabIndex == 1
+                            ? "Menu Transaksi"
+                            : "Menu Laporan",
+                        style: AppTextStyles.headingBlue,
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Menu Title
-                        Text(
-                          _selectedTabIndex == 0
-                              ? "Menu Master"
-                              : _selectedTabIndex == 1
-                              ? "Menu Transaksi"
-                              : "Menu Laporan",
-                          style: AppTextStyles.headingBlue,
-                        ),
-                        SizedBox(height: 28),
+                      SizedBox(height: 28),
 
-                        /// Grid Menu Items
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (var i = 0; i < filteredMenu.length; i += 3)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 24.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      for (var j = i; j < i + 3; j++)
-                                        if (j < filteredMenu.length)
-                                          Expanded(
-                                            child: _buildMenuItem(
-                                              filteredMenu[j],
-                                            ),
-                                          )
-                                        else
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ), // Empty slot to align layout
-                                    ],
-                                  ),
+                      /// Grid Menu Items
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (var i = 0; i < filteredMenu.length; i += 3)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    for (var j = i; j < i + 3; j++)
+                                      if (j < filteredMenu.length)
+                                        Expanded(
+                                          child: _buildMenuItem(
+                                            filteredMenu[j],
+                                          ),
+                                        )
+                                      else
+                                        const Expanded(
+                                          child: SizedBox(),
+                                        ), // Empty slot to align layout
+                                  ],
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
-                        // Expanded(
-                        //   child: ListView(
-                        //     children: [
-                        //       GridView.count(
-                        //         shrinkWrap:
-                        //             true, // ✅ This now works because it's inside ListView
-                        //         physics:
-                        //             NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
-                        //         crossAxisCount: 3,
-                        //         crossAxisSpacing: 12,
-                        //         mainAxisSpacing: 12,
-                        //         childAspectRatio: 1,
-                        //         children:
-                        //             filteredMenu
-                        //                 .map((item) => _buildMenuItem(item))
-                        //                 .toList(),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    ),
+                      ),
+                      // Expanded(
+                      //   child: ListView(
+                      //     children: [
+                      //       GridView.count(
+                      //         shrinkWrap:
+                      //             true, // ✅ This now works because it's inside ListView
+                      //         physics:
+                      //             NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
+                      //         crossAxisCount: 3,
+                      //         crossAxisSpacing: 12,
+                      //         mainAxisSpacing: 12,
+                      //         childAspectRatio: 1,
+                      //         children:
+                      //             filteredMenu
+                      //                 .map((item) => _buildMenuItem(item))
+                      //                 .toList(),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
+                    ],
                   ),
                 ),
               ),
