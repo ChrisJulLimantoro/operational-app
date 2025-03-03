@@ -104,7 +104,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                         spacing: 6,
                         children: [
                           Text(
-                            "Detail Transaksi",
+                            "Detail Kategori",
                             style: AppTextStyles.headingBlue,
                           ),
                           Divider(),
