@@ -118,7 +118,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             pinned: true, // Ensures the app bar remains visible when scrolling
             floating: false, // No snap effect
             elevation: 0,
-            title: Text('Usaha', style: AppTextStyles.headingWhite),
+            title: Text('Pegawai', style: AppTextStyles.headingWhite),
             leading: IconButton(
               icon: Icon(CupertinoIcons.arrow_left, color: Colors.white),
               onPressed: () {
@@ -149,6 +149,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 6,
                             children: [
                               Text(
                                 employee.name,

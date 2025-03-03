@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/model/category.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/screen/category_detail_screen.dart';
 import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
 import 'package:operational_app/screen/company_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
+import 'package:operational_app/screen/category_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -23,6 +26,17 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/employee',
       builder: (context, state) => const EmployeeScreen(),
+    ),
+    GoRoute(
+      path: '/category',
+      builder: (context, state) => const CategoryScreen(),
+    ),
+    GoRoute(
+      path: '/category-detail',
+      builder: (context, state) {
+        final category = state.extra as Category;
+        return CategoryDetailScreen(category: category);
+      },
     ),
     GoRoute(
       path: '/transaction',

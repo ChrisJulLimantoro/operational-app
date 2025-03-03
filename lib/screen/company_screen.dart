@@ -146,6 +146,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 6,
                             children: [
                               Text(
                                 "${company.code} | ${company.name}",
