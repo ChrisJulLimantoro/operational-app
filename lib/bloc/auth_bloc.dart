@@ -4,12 +4,30 @@ import '../helper/auth_storage.dart';
 class AuthState {
   final String storeId;
   final String companyId;
+  final String userId;
+  final String userEmail;
+  final bool isOwner;
 
-  AuthState({required this.storeId, required this.companyId});
+  AuthState({
+    required this.storeId,
+    required this.companyId,
+    required this.userId,
+    required this.userEmail,
+    required this.isOwner,
+  });
 }
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit() : super(AuthState(storeId: '', companyId: ''));
+  AuthCubit()
+    : super(
+        AuthState(
+          storeId: '',
+          companyId: '',
+          userId: '',
+          userEmail: '',
+          isOwner: false,
+        ),
+      );
 
   Future<void> loadAuthParams() async {
     final authData = await AuthStorage.getAuthData();
@@ -17,12 +35,32 @@ class AuthCubit extends Cubit<AuthState> {
       AuthState(
         storeId: authData['store_id'] ?? '',
         companyId: authData['company_id'] ?? '',
+        userId: authData['user_id'] ?? '',
+        userEmail: authData['user_email'] ?? '',
+        isOwner: authData['is_owner'] ?? false,
       ),
     );
   }
 
-  Future<void> updateStoreAndCompany(String storeId, String companyId) async {
-    await AuthStorage.updateStoreAndCompany(storeId, companyId);
-    emit(AuthState(storeId: storeId, companyId: companyId));
+  Future<void> updateAuth(
+    String storeId,
+    String companyId,
+    String userId,
+    String userEmail,
+    bool isOwner,
+  ) async {
+    await AuthStorage.saveData(storeId, companyId, userId, userEmail, isOwner);
+    print(
+      "Auth Updated: $storeId, $companyId, $userId, $userEmail, $isOwner",
+    ); // Debugging
+    emit(
+      AuthState(
+        storeId: storeId,
+        companyId: companyId,
+        userId: state.userId,
+        userEmail: state.userEmail,
+        isOwner: state.isOwner,
+      ),
+    );
   }
 }

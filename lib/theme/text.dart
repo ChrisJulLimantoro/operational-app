@@ -35,6 +35,12 @@ class AppTextStyles {
     color: AppColors.pinkPrimary,
     letterSpacing: -0.5,
   );
+  static const TextStyle labelWhite = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    color: Colors.white,
+    letterSpacing: -0.5,
+  );
 
   static const TextStyle labelBlue = TextStyle(
     fontSize: 15,

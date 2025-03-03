@@ -25,13 +25,19 @@ class AuthStorage {
     await prefs.setBool(_isOwnerKey, isOwner);
   }
 
-  static Future<void> updateStoreAndCompany(
+  static Future<void> saveData(
     String storeId,
     String companyId,
+    String userId,
+    String userEmail,
+    bool isOwner,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_storeIdKey, storeId);
     await prefs.setString(_companyIdKey, companyId);
+    await prefs.setString(_userIdKey, userId);
+    await prefs.setString(_userEmailKey, userEmail);
+    await prefs.setBool(_isOwnerKey, isOwner);
   }
 
   static Future<String?> getToken() async {

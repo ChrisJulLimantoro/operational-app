@@ -102,7 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        GoRouter.of(context).push("/setting");
+                      },
                       icon: const Icon(Icons.settings),
                       color: Colors.white,
                     ),

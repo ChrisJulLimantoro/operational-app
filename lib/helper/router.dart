@@ -8,6 +8,7 @@ import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
 import 'package:operational_app/screen/company_screen.dart';
+import 'package:operational_app/screen/setting_screen.dart';
 import 'package:operational_app/screen/store_detail_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
@@ -23,6 +24,10 @@ final GoRouter router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/setting',
+      builder: (context, state) => const SettingScreen(),
+    ),
     GoRoute(
       path: '/company',
       builder: (context, state) => const CompanyScreen(),

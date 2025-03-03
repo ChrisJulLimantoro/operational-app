@@ -45,7 +45,13 @@ class AuthAPI {
           return true;
         }
         final authCubit = context.read<AuthCubit>();
-        authCubit.updateStoreAndCompany(data['store_id'], data['company_id']);
+        authCubit.updateAuth(
+          data['store_id'],
+          data['company_id'],
+          data['id'],
+          data['email'],
+          data['is_owner'],
+        );
 
         // Redirect user to home screen
         return true;
