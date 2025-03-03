@@ -8,6 +8,7 @@ import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/transaction_card.dart';
+import 'package:go_router/go_router.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -131,12 +132,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
       double maxScroll = _scroll.position.maxScrollExtent;
 
       if (offset >= maxScroll - 100 && hasMore) {
-        debugPrint('Fetching more transactions...');
         _fetchTransactions();
       }
 
       if (offset <= -40) {
-        debugPrint('Refreshing transactions...');
         _refreshTransactions();
       }
     });
@@ -157,7 +156,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
             leading: IconButton(
               icon: const Icon(CupertinoIcons.arrow_left, color: Colors.white),
               onPressed: () {
-                Navigator.pop(context);
+                _scroll.jumpTo(0);
+                context.pop();
               },
             ),
           ),

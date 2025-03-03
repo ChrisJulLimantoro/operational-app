@@ -3,10 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/search_bar.dart';
-import 'qr_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,14 +18,13 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Dummy menu data (can be fetched from API)
   final Map<int, List<Map<String, dynamic>>> _menuData = {
     0: [
-      {"title": "Usaha", "icon": Icons.store, "route": "/usaha"},
-      {"title": "Cabang", "icon": Icons.business, "route": "/cabang"},
-      {"title": "Pegawai", "icon": Icons.people, "route": "/pegawai"},
-      {"title": "Produk", "icon": Icons.shopping_cart, "route": "/produk"},
-      {"title": "Kategori", "icon": Icons.category, "route": "/kategori"},
+      {"title": "Usaha", "icon": Icons.store, "route": "/company"},
+      {"title": "Cabang", "icon": Icons.business, "route": "/store"},
+      {"title": "Pegawai", "icon": Icons.people, "route": "/employee"},
+      {"title": "Kategori", "icon": Icons.category, "route": "/category"},
     ],
     1: [
-      {"title": "Penjualan", "icon": Icons.sell, "route": "/penjualan"},
+      {"title": "Penjualan", "icon": Icons.sell, "route": "/transaction"},
       {"title": "Pembelian", "icon": Icons.shopping_bag, "route": "/pembelian"},
       {"title": "Retur", "icon": Icons.undo, "route": "/retur"},
     ],
@@ -59,22 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String? scannedData;
-
-  void _openScanner() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => QRScannerScreen(
-              onScanned: (data) {
-                setState(() {
-                  scannedData = data;
-                });
-              },
-            ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -197,26 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      // Expanded(
-                      //   child: ListView(
-                      //     children: [
-                      //       GridView.count(
-                      //         shrinkWrap:
-                      //             true, // ✅ This now works because it's inside ListView
-                      //         physics:
-                      //             NeverScrollableScrollPhysics(), // Prevents nested scrolling issues
-                      //         crossAxisCount: 3,
-                      //         crossAxisSpacing: 12,
-                      //         mainAxisSpacing: 12,
-                      //         childAspectRatio: 1,
-                      //         children:
-                      //             filteredMenu
-                      //                 .map((item) => _buildMenuItem(item))
-                      //                 .toList(),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
@@ -255,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMenuItem(Map<String, dynamic> item) {
     return InkWell(
       onTap: () {
-        GoRouter.of(context).go(item["route"]); // Navigate to the route
+        GoRouter.of(context).push(item["route"]); // Navigate to the route
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,

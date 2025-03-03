@@ -5,7 +5,6 @@ import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/auth_storage.dart';
 import 'package:operational_app/helper/notification.dart';
-import 'package:operational_app/main.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class AuthAPI {
@@ -60,12 +59,11 @@ class AuthAPI {
           message: "Connection timeout. Please try again.",
           backgroundColor: AppColors.error,
           actionLabel: "Retry",
-          onActionPressed:
-              () => login(navigatorKey.currentContext!, email, password),
+          onActionPressed: () => login(context, email, password),
         );
       } else {
         NotificationHelper.showNotificationSheet(
-          context: navigatorKey.currentContext!,
+          context: context,
           title: "Login Gagal",
           message: e.response?.data['message'] ?? "Gagal Masuk",
           primaryButtonText: "Coba Lagi",

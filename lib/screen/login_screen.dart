@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response) {
       _emailController.clear();
       _passwordController.clear();
-      context.go('/transaction');
+      context.go('/home');
     }
   }
 
