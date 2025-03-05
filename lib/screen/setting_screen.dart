@@ -88,7 +88,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   ],
                 ),
                 onTap: () {
-                  // GoRouter.of(context).go('/');
+                  GoRouter.of(context).push('/change-password');
                 },
               ),
               Divider(),
@@ -101,7 +101,11 @@ class _SettingScreenState extends State<SettingScreen> {
                   ],
                 ),
                 onTap: () {
-                  GoRouter.of(context).go('/');
+                  context.read<AuthCubit>().logout();
+                  Future.delayed(Duration(milliseconds: 300), () {
+                    if (!context.mounted) return;
+                    GoRouter.of(context).go('/');
+                  });
                 },
               ),
               Divider(),

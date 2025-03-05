@@ -63,6 +63,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchStore() async {
     Store? store;
+
+    if (context.read<AuthCubit>().state.storeId.isEmpty) {
+      return;
+    }
+
     store = await StoreAPI.fetchStore(
       context,
       context.read<AuthCubit>().state.storeId,

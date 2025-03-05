@@ -5,6 +5,7 @@ import 'package:operational_app/model/store.dart';
 import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/screen/active_store_screen.dart';
 import 'package:operational_app/screen/category_detail_screen.dart';
+import 'package:operational_app/screen/change_password_screen.dart';
 import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
@@ -32,6 +33,12 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/active-store',
       builder: (context, state) => const ActiveStoreScreen(),
+    ),
+    GoRoute(
+      path: '/change-password',
+      builder: (context, state) {
+        return const ChangePasswordScreen();
+      },
     ),
     GoRoute(
       path: '/company',

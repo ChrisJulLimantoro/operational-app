@@ -23,10 +23,10 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit()
     : super(
         AuthState(
-          storeId: '',
-          companyId: '',
-          userId: '',
-          userEmail: '',
+          storeId: "",
+          companyId: "",
+          userId: "",
+          userEmail: "",
           isOwner: false,
         ),
       );
@@ -76,9 +76,22 @@ class AuthCubit extends Cubit<AuthState> {
       AuthState(
         storeId: storeId,
         companyId: companyId,
-        userId: state.userId,
-        userEmail: state.userEmail,
-        isOwner: state.isOwner,
+        userId: userId,
+        userEmail: userEmail,
+        isOwner: isOwner,
+      ),
+    );
+  }
+
+  Future<void> logout() async {
+    await AuthStorage.clearAuthData();
+    emit(
+      AuthState(
+        storeId: "",
+        companyId: "",
+        userId: "",
+        userEmail: "",
+        isOwner: false,
       ),
     );
   }
