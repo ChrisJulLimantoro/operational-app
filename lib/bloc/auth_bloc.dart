@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:operational_app/model/store.dart';
 import '../helper/auth_storage.dart';
 
 class AuthState {
@@ -29,7 +31,7 @@ class AuthCubit extends Cubit<AuthState> {
         ),
       );
 
-  Future<void> loadAuthParams() async {
+  Future<void> loadAuthParams(BuildContext context) async {
     final authData = await AuthStorage.getAuthData();
     emit(
       AuthState(
@@ -42,7 +44,27 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
+  Future<void> changeActiveStore(Store store) async {
+    await AuthStorage.saveData(
+      store.id,
+      store.company.id,
+      state.userId,
+      state.userEmail,
+      state.isOwner,
+    );
+    emit(
+      AuthState(
+        storeId: store.id,
+        companyId: store.company.id,
+        userId: state.userId,
+        userEmail: state.userEmail,
+        isOwner: state.isOwner,
+      ),
+    );
+  }
+
   Future<void> updateAuth(
+    BuildContext context,
     String storeId,
     String companyId,
     String userId,
@@ -50,9 +72,6 @@ class AuthCubit extends Cubit<AuthState> {
     bool isOwner,
   ) async {
     await AuthStorage.saveData(storeId, companyId, userId, userEmail, isOwner);
-    print(
-      "Auth Updated: $storeId, $companyId, $userId, $userEmail, $isOwner",
-    ); // Debugging
     emit(
       AuthState(
         storeId: storeId,

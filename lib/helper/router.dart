@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:operational_app/model/category.dart';
 import 'package:operational_app/model/store.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/screen/active_store_screen.dart';
 import 'package:operational_app/screen/category_detail_screen.dart';
 import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
@@ -27,6 +28,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/setting',
       builder: (context, state) => const SettingScreen(),
+    ),
+    GoRoute(
+      path: '/active-store',
+      builder: (context, state) => const ActiveStoreScreen(),
     ),
     GoRoute(
       path: '/company',

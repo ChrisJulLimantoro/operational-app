@@ -46,6 +46,7 @@ class AuthAPI {
         }
         final authCubit = context.read<AuthCubit>();
         authCubit.updateAuth(
+          context,
           data['store_id'],
           data['company_id'],
           data['id'],

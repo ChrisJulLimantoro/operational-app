@@ -12,7 +12,7 @@ void main() {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit()..loadAuthParams()),
+        BlocProvider(create: (context) => AuthCubit()..loadAuthParams(context)),
       ],
       child: MyApp(),
     ),

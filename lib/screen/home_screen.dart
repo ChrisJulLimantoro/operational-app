@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/store.dart';
+import 'package:operational_app/bloc/auth_bloc.dart';
+import 'package:operational_app/model/store.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/search_bar.dart';
@@ -14,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   int _selectedTabIndex = 0;
+  Store? activeStore;
 
   /// Dummy menu data (can be fetched from API)
   final Map<int, List<Map<String, dynamic>>> _menuData = {
@@ -56,6 +61,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _fetchStore() async {
+    Store? store;
+    store = await StoreAPI.fetchStore(
+      context,
+      context.read<AuthCubit>().state.storeId,
+    );
+    setState(() => activeStore = store);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStore();
+  }
+
   String? scannedData;
 
   @override
@@ -63,154 +83,163 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Map<String, dynamic>> filteredMenu =
         _menuData[_selectedTabIndex] ?? [];
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            color: Colors.grey.shade300,
-          ),
-
-          /// Background
-          Container(
-            height: 300,
-            decoration: BoxDecoration(
-              color: AppColors.bluePrimary,
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(8),
-              ),
+    return BlocListener<AuthCubit, AuthState>(
+      listenWhen: (prev, state) => prev.storeId != state.storeId,
+      listener: (context, state) {
+        _fetchStore();
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              color: Colors.grey.shade300,
             ),
-          ),
 
-          /// Content
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 100), // Space for status bar
-              /// Title
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text("SA | Store A", style: AppTextStyles.headingWhite),
-                    Spacer(),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.notifications),
-                      color: Colors.white,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        GoRouter.of(context).push("/setting");
-                      },
-                      icon: const Icon(Icons.settings),
-                      color: Colors.white,
-                    ),
-                  ],
+            /// Background
+            Container(
+              height: 300,
+              decoration: BoxDecoration(
+                color: AppColors.bluePrimary,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(8),
                 ),
               ),
+            ),
 
-              const SizedBox(height: 10),
-
-              /// Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: SearchBarWidget(controller: _searchController),
-              ),
-
-              /// Menu Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 28,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16),
-                      bottom: Radius.circular(16),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            /// Content
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 100), // Space for status bar
+                /// Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Menu Title
                       Text(
-                        _selectedTabIndex == 0
-                            ? "Menu Master"
-                            : _selectedTabIndex == 1
-                            ? "Menu Transaksi"
-                            : "Menu Laporan",
-                        style: AppTextStyles.headingBlue,
+                        "${activeStore?.code ?? "-"} | ${activeStore?.name ?? "-"}",
+                        style: AppTextStyles.headingWhite,
                       ),
-                      SizedBox(height: 28),
-
-                      /// Grid Menu Items
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            for (var i = 0; i < filteredMenu.length; i += 3)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 24.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    for (var j = i; j < i + 3; j++)
-                                      if (j < filteredMenu.length)
-                                        Expanded(
-                                          child: _buildMenuItem(
-                                            filteredMenu[j],
-                                          ),
-                                        )
-                                      else
-                                        const Expanded(
-                                          child: SizedBox(),
-                                        ), // Empty slot to align layout
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
+                      Spacer(),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.notifications),
+                        color: Colors.white,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          GoRouter.of(context).push("/setting");
+                        },
+                        icon: const Icon(Icons.settings),
+                        color: Colors.white,
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
 
-      /// Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedTabIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: _tabColors[_selectedTabIndex],
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.file_open_rounded),
-            label: "Master",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.tab_rounded),
-            label: "Transaksi",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.file_download_rounded),
-            label: "Laporan",
-          ),
-        ],
+                const SizedBox(height: 10),
+
+                /// Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: SearchBarWidget(controller: _searchController),
+                ),
+
+                /// Menu Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 28,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
+                        bottom: Radius.circular(16),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Menu Title
+                        Text(
+                          _selectedTabIndex == 0
+                              ? "Menu Master"
+                              : _selectedTabIndex == 1
+                              ? "Menu Transaksi"
+                              : "Menu Laporan",
+                          style: AppTextStyles.headingBlue,
+                        ),
+                        SizedBox(height: 28),
+
+                        /// Grid Menu Items
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var i = 0; i < filteredMenu.length; i += 3)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 24.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      for (var j = i; j < i + 3; j++)
+                                        if (j < filteredMenu.length)
+                                          Expanded(
+                                            child: _buildMenuItem(
+                                              filteredMenu[j],
+                                            ),
+                                          )
+                                        else
+                                          const Expanded(
+                                            child: SizedBox(),
+                                          ), // Empty slot to align layout
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        /// Bottom Navigation Bar
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedTabIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.white,
+          selectedItemColor: _tabColors[_selectedTabIndex],
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.file_open_rounded),
+              label: "Master",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.tab_rounded),
+              label: "Transaksi",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.file_download_rounded),
+              label: "Laporan",
+            ),
+          ],
+        ),
       ),
     );
   }

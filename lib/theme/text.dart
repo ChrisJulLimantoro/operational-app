@@ -6,6 +6,7 @@ class AppTextStyles {
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: Colors.white,
+    letterSpacing: -0.5,
   );
 
   static const TextStyle headingBlack = TextStyle(

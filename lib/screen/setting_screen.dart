@@ -75,7 +75,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   ],
                 ),
                 onTap: () {
-                  // GoRouter.of(context).go('/');
+                  GoRouter.of(context).push('/active-store');
                 },
               ),
               Divider(),

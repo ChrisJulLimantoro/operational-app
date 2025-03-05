@@ -49,4 +49,44 @@ class StoreAPI {
       return [];
     }
   }
+
+  static Future<Store?> fetchStore(BuildContext context, String id) async {
+    try {
+      final response = await ApiHelper.get(context, '/master/store/$id');
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      final result = Store.fromJSON(response.data['data']);
+      return result;
+    } on DioException catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchStore(context, id),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchStore(context, id),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    }
+  }
 }
