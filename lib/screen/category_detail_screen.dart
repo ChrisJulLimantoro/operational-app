@@ -50,7 +50,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       {
         "label": "Berlaku untuk Usaha",
         "value":
-            "${widget.category.company.code} | ${widget.category.company.name}",
+            "${widget.category.company?.code ?? ''} | ${widget.category.company?.name ?? ''}",
         "type": "text",
         "isLong": false,
       },
@@ -67,7 +67,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         "isLong": true,
       },
     ];
-    types = widget.category.types;
+    types = widget.category.types!;
   }
 
   @override

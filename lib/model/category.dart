@@ -29,9 +29,9 @@ class Category {
   final MetalType metalType;
   final double weightTray;
   final double weightPaper;
-  final List<Type> types;
+  final List<Type>? types;
   final String? description;
-  final Company company;
+  final Company? company;
   final DateTime? createdAt;
 
   Category({
@@ -42,8 +42,8 @@ class Category {
     required this.metalType,
     required this.weightTray,
     required this.weightPaper,
-    required this.types,
-    required this.company,
+    this.types,
+    this.company,
     this.description,
     required this.createdAt,
   });
@@ -57,9 +57,13 @@ class Category {
       metalType: MetalType.fromInt(json['metal_type']),
       weightTray: double.parse(json['weight_tray']),
       weightPaper: double.parse(json['weight_paper']),
-      types: (json['types'] as List).map((e) => Type.fromJSON(e)).toList(),
+      types:
+          json['types'] != null
+              ? (json['types'] as List).map((e) => Type.fromJSON(e)).toList()
+              : null,
       description: json['description'] ?? '-',
-      company: Company.fromJSON(json['company']),
+      company:
+          json['company'] != null ? Company.fromJSON(json['company']) : null,
       createdAt: DateTime.tryParse(json['created_at']),
     );
   }

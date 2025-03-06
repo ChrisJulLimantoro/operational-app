@@ -173,7 +173,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 ),
                                 TextCardDetail(
                                   label: 'Sub Categories',
-                                  value: '${category.types.length}',
+                                  value: '${category.types?.length ?? 0}',
                                   type: "text",
                                 ),
                                 TextCardDetail(

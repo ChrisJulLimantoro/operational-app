@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
       {"title": "Cabang", "icon": Icons.business, "route": "/store"},
       {"title": "Pegawai", "icon": Icons.people, "route": "/employee"},
       {"title": "Kategori", "icon": Icons.category, "route": "/category"},
+      {"title": "Produk", "icon": Icons.category, "route": "/product"},
     ],
     1: [
       {"title": "Penjualan", "icon": Icons.sell, "route": "/transaction"},
