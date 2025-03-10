@@ -13,7 +13,11 @@ class ProductAPI {
   ) async {
     // Fetch products from the server
     try {
-      final response = await ApiHelper.get(context, '/inventory/product');
+      final response = await ApiHelper.get(
+        context,
+        '/inventory/product',
+        params: {'page': page, 'limit': limit},
+      );
       if (!response.data['success']) {
         return [];
       }
@@ -23,10 +27,10 @@ class ProductAPI {
       if (response.data is! Map<String, dynamic>) {
         throw Exception("Unexpected response format");
       }
-      debugPrint('Fetched ${response.data['data'].length} products');
+      debugPrint('Fetched ${response.data['data']['data'].length} products');
       debugPrint(response.data['data'].toString());
       final result =
-          (response.data['data'] as List)
+          (response.data['data']['data'] as List)
               .map((json) => Product.fromJSON(json))
               .toList();
       return result;

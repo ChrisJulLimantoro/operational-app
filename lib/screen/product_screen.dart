@@ -65,7 +65,6 @@ class _ProductScreenState extends State<ProductScreen> {
           hasMore = false;
         }
       }
-      hasMore = false;
     } catch (e) {
       debugPrint("Error fetching products: $e");
     }
@@ -135,6 +134,7 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
+        scrollBehavior: CupertinoScrollBehavior(),
         controller: _scroll,
         slivers: [
           SliverAppBar(
@@ -210,6 +210,14 @@ class _ProductScreenState extends State<ProductScreen> {
               ),
             ),
           ),
+          // Loading Indicator
+          if (isLoading)
+            SliverToBoxAdapter(
+              child: const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
         ],
       ),
     );
