@@ -11,6 +11,7 @@ import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
 import 'package:operational_app/screen/company_screen.dart';
+import 'package:operational_app/screen/operation_screen.dart';
 import 'package:operational_app/screen/product_detail_screen.dart';
 import 'package:operational_app/screen/product_screen.dart';
 import 'package:operational_app/screen/setting_screen.dart';
@@ -80,6 +81,10 @@ final GoRouter router = GoRouter(
         final product = state.extra as Product;
         return ProductDetailScreen(product: product);
       },
+    ),
+    GoRoute(
+      path: '/operation',
+      builder: (context, state) => const OperationScreen(),
     ),
     GoRoute(
       path: '/transaction',

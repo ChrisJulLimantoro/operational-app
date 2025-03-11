@@ -63,6 +63,7 @@ class StoreAPI {
         throw Exception("Unexpected response format");
       }
       final result = Store.fromJSON(response.data['data']);
+      debugPrint(result.toString());
       return result;
     } on DioException catch (e) {
       NotificationHelper.showNotificationSheet(

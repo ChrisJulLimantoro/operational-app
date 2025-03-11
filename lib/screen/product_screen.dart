@@ -134,7 +134,8 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
-        scrollBehavior: CupertinoScrollBehavior(),
+        scrollBehavior: const CupertinoScrollBehavior(),
+        physics: const AlwaysScrollableScrollPhysics(),
         controller: _scroll,
         slivers: [
           SliverAppBar(

@@ -28,6 +28,8 @@ class ApiHelper {
             options.headers['Authorization'] =
                 token != null ? 'Bearer $token' : '';
 
+            debugPrint("Auth State: $authState");
+
             if (authState?.storeId != null && authState?.companyId != null) {
               options.queryParameters.addAll({
                 'auth': {
