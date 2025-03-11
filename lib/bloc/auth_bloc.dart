@@ -47,7 +47,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> changeActiveStore(Store store) async {
     await AuthStorage.saveData(
       store.id,
-      store.company.id,
+      store.company?.id ?? '',
       state.userId,
       state.userEmail,
       state.isOwner,
@@ -55,7 +55,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(
       AuthState(
         storeId: store.id,
-        companyId: store.company.id,
+        companyId: store.company?.id ?? '',
         userId: state.userId,
         userEmail: state.userEmail,
         isOwner: state.isOwner,

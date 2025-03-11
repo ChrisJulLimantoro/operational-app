@@ -23,31 +23,73 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Dummy menu data (can be fetched from API)
   final Map<int, List<Map<String, dynamic>>> _menuData = {
     0: [
-      {"title": "Usaha", "icon": Icons.store, "route": "/company"},
-      {"title": "Cabang", "icon": Icons.business, "route": "/store"},
-      {"title": "Pegawai", "icon": Icons.people, "route": "/employee"},
-      {"title": "Kategori", "icon": Icons.category, "route": "/category"},
-      {"title": "Produk", "icon": Icons.category, "route": "/product"},
-      {"title": "Operasi", "icon": Icons.category, "route": "/operation"},
+      {
+        "group": "Menu Master",
+        "items": [
+          {"title": "Usaha", "icon": Icons.store, "route": "/company"},
+          {"title": "Cabang", "icon": Icons.business, "route": "/store"},
+          {"title": "Pegawai", "icon": Icons.people, "route": "/employee"},
+          {"title": "Kategori", "icon": Icons.category, "route": "/category"},
+          {"title": "Produk", "icon": Icons.category, "route": "/product"},
+          {"title": "Operasi", "icon": Icons.category, "route": "/operation"},
+        ],
+      },
     ],
     1: [
-      {"title": "Penjualan", "icon": Icons.sell, "route": "/transaction"},
-      {"title": "Pembelian", "icon": Icons.shopping_bag, "route": "/pembelian"},
-      {"title": "Retur", "icon": Icons.undo, "route": "/retur"},
+      {
+        "group": "Menu Inventory",
+        "items": [
+          {
+            "title": "Stock Opname",
+            "icon": Icons.check_box,
+            "route": "/stock-opname",
+          },
+          {
+            "title": "Stock Out",
+            "icon": Icons.outbond_sharp,
+            "route": "/pembelian",
+          },
+        ],
+      },
+      {
+        "group": "Menu Transaksi",
+        "items": [
+          {"title": "Penjualan", "icon": Icons.sell, "route": "/transaction"},
+          {
+            "title": "Pembelian",
+            "icon": Icons.shopping_bag,
+            "route": "/pembelian",
+          },
+          {"title": "Retur", "icon": Icons.undo, "route": "/retur"},
+        ],
+      },
     ],
     2: [
-      {"title": "Pendapatan", "icon": Icons.bar_chart, "route": "/pendapatan"},
       {
-        "title": "Pengeluaran",
-        "icon": Icons.money_off,
-        "route": "/pengeluaran",
+        "group": "Menu Laporan",
+        "items": [
+          {
+            "title": "Pendapatan",
+            "icon": Icons.bar_chart,
+            "route": "/pendapatan",
+          },
+          {
+            "title": "Pengeluaran",
+            "icon": Icons.money_off,
+            "route": "/pengeluaran",
+          },
+          {
+            "title": "Keuangan",
+            "icon": Icons.account_balance,
+            "route": "/keuangan",
+          },
+          {
+            "title": "Inventory",
+            "icon": Icons.inventory,
+            "route": "/inventory",
+          },
+        ],
       },
-      {
-        "title": "Keuangan",
-        "icon": Icons.account_balance,
-        "route": "/keuangan",
-      },
-      {"title": "Inventory", "icon": Icons.inventory, "route": "/inventory"},
     ],
   };
 
@@ -82,8 +124,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchStore();
   }
-
-  String? scannedData;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 /// Menu Section
+                /// Menu Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Container(
@@ -173,49 +214,52 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Menu Title
-                        Text(
-                          _selectedTabIndex == 0
-                              ? "Menu Master"
-                              : _selectedTabIndex == 1
-                              ? "Menu Transaksi"
-                              : "Menu Laporan",
-                          style: AppTextStyles.headingBlue,
-                        ),
-                        SizedBox(height: 28),
-
-                        /// Grid Menu Items
-                        Flexible(
-                          child: Column(
+                        // Loop through each group
+                        for (var x = 0; x < filteredMenu.length; x++)
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              for (var i = 0; i < filteredMenu.length; i += 3)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 24.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      for (var j = i; j < i + 3; j++)
-                                        if (j < filteredMenu.length)
-                                          Expanded(
-                                            child: _buildMenuItem(
-                                              filteredMenu[j],
-                                            ),
-                                          )
-                                        else
-                                          const Expanded(
-                                            child: SizedBox(),
-                                          ), // Empty slot to align layout
-                                    ],
-                                  ),
-                                ),
+                              Text(
+                                filteredMenu[x]["group"],
+                                style: AppTextStyles.headingBlue,
+                              ),
+                              const SizedBox(height: 28),
+                              // Instead of Flexible, use a Column directly
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (
+                                    var i = 0;
+                                    i < filteredMenu[x]['items'].length;
+                                    i += 3
+                                  )
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 24.0,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          for (var j = i; j < i + 3; j++)
+                                            if (j <
+                                                filteredMenu[x]['items'].length)
+                                              Expanded(
+                                                child: _buildMenuItem(
+                                                  filteredMenu[x]['items'][j],
+                                                ),
+                                              )
+                                            else
+                                              const Expanded(child: SizedBox()),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
-                        ),
                       ],
                     ),
                   ),

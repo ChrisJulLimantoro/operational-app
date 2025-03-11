@@ -16,7 +16,7 @@ class Store {
   final double taxPercentage;
   final int poinConfig;
   final String logo;
-  final Company company;
+  final Company? company;
   final DateTime? createdAt;
 
   Store({
@@ -40,24 +40,41 @@ class Store {
   });
 
   factory Store.fromJSON(Map<String, dynamic> json) {
+    print(json);
     return Store(
-      id: json['id'],
-      code: json['code'],
-      name: json['name'],
-      npwp: json['npwp'],
-      address: json['address'],
-      openDate: DateTime.parse(json['open_date']),
-      longitude: double.parse(json['longitude']),
-      latitude: double.parse(json['latitude']),
+      id: json['id'] ?? '',
+      code: json['code'] ?? '',
+      name: json['name'] ?? '',
+      npwp: json['npwp'] ?? '-',
+      address: json['address'] ?? '-',
+      openDate:
+          json['open_date'] != null
+              ? DateTime.parse(json['open_date'].toString())
+              : DateTime.now(),
+      longitude:
+          json['longitude'] != null
+              ? double.tryParse(json['longitude'].toString()) ?? 0.0
+              : 0.0,
+      latitude:
+          json['latitude'] != null
+              ? double.tryParse(json['latitude'].toString()) ?? 0.0
+              : 0.0,
       description: json['description'] ?? '-',
-      isActive: json['is_active'],
-      isFlexPrice: json['is_flex_price'],
-      isFloatPrice: json['is_float_price'],
-      taxPercentage: double.parse(json['tax_percentage']),
-      poinConfig: json['poin_config'],
-      logo: json['logo'],
-      company: Company.fromJSON(json['company']),
-      createdAt: DateTime.tryParse(json['created_at']),
+      isActive: json['is_active'] ?? false,
+      isFlexPrice: json['is_flex_price'] ?? false,
+      isFloatPrice: json['is_float_price'] ?? false,
+      taxPercentage:
+          json['tax_percentage'] != null
+              ? double.tryParse(json['tax_percentage'].toString()) ?? 0.0
+              : 0.0,
+      poinConfig: json['poin_config'] ?? 0,
+      logo: json['logo'] ?? '-',
+      company:
+          json['company'] != null ? Company.fromJSON(json['company']) : null,
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.tryParse(json['created_at'].toString())
+              : null,
     );
   }
 }

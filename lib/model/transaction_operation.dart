@@ -23,7 +23,7 @@ class TransactionOperation {
     required this.comment,
   });
 
-  factory TransactionOperation.fromJson(Map<String, dynamic> json) {
+  factory TransactionOperation.fromJSON(Map<String, dynamic> json) {
     return TransactionOperation(
       id: json['id'],
       transactionId: json['transaction_id'],

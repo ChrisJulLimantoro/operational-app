@@ -28,7 +28,7 @@ class TransactionAPI {
         throw Exception("Unexpected response format");
       }
       return (response.data['data']['data'] as List)
-          .map((json) => Transaction.fromJson(json))
+          .map((json) => Transaction.fromJSON(json))
           .toList();
     } on DioException catch (e) {
       NotificationHelper.showNotificationSheet(

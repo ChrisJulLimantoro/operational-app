@@ -61,6 +61,7 @@ class AuthAPI {
         return false;
       }
     } on DioException catch (e) {
+      debugPrint("Error: $e");
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         NotificationHelper.showSnackbar(

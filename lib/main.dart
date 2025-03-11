@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/helper/router.dart';
+import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
+import 'package:provider/provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() {
@@ -13,6 +15,7 @@ void main() {
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()..loadAuthParams(context)),
+        ChangeNotifierProvider(create: (_) => StockOpnameNotifier()),
       ],
       child: MyApp(),
     ),

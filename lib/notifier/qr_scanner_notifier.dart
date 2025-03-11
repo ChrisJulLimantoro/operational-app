@@ -9,16 +9,18 @@ class QRScannerNotifier extends ChangeNotifier {
   void onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      scannedData = scanData.code;
-      controller.pauseCamera(); // Pause after scan
-      notifyListeners();
-    });
-  }
+      if (scannedData == null) {
+        scannedData = scanData.code;
+        controller.pauseCamera(); // Pause immediately after first scan
+        notifyListeners();
 
-  void restartScanner() {
-    scannedData = null;
-    controller?.resumeCamera();
-    notifyListeners();
+        // Automatically return scanned result
+        Future.delayed(Duration(milliseconds: 500), () {
+          controller.dispose();
+          notifyListeners();
+        });
+      }
+    });
   }
 
   void disposeController() {

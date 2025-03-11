@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:operational_app/widget/qr_scanner.dart';
+import 'package:operational_app/notifier/qr_scanner_notifier.dart';
 import 'package:provider/provider.dart';
-import '../widget/qr_scanner_notifier.dart';
-import '../widget/qr_scanner.dart';
 
 class QRScannerScreen extends StatelessWidget {
-  final Function(String) onScanned;
-  const QRScannerScreen({Key? key, required this.onScanned}) : super(key: key);
+  const QRScannerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => QRScannerNotifier(),
+      create: (context) => QRScannerNotifier(),
       child: Scaffold(
-        appBar: AppBar(title: const Text('Scan QR Code')),
+        appBar: AppBar(title: const Text("QR Scanner")),
         body: Consumer<QRScannerNotifier>(
-          builder: (context, controller, _) {
+          builder: (context, qrScannerNotifier, child) {
             return QRScannerView(
-              qrKey: controller.qrKey,
-              onQRViewCreated: controller.onQRViewCreated,
-              scannedData: controller.scannedData,
-              onScanAgain: controller.restartScanner,
-              onConfirm: () {
-                onScanned(controller.scannedData!);
-                Navigator.pop(context);
-              },
+              qrKey: qrScannerNotifier.qrKey,
+              onQRViewCreated: qrScannerNotifier.onQRViewCreated,
+              scannedData: qrScannerNotifier.scannedData,
             );
           },
         ),

@@ -21,7 +21,7 @@ class EmployeeAPI {
       }
       final result =
           (response.data['data'] as List)
-              .map((json) => Employee.fromJson(json))
+              .map((json) => Employee.fromJSON(json))
               .toList();
       return result;
     } on DioException catch (e) {

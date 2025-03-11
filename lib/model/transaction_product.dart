@@ -29,7 +29,7 @@ class TransactionProduct {
     this.comment = '',
   });
 
-  factory TransactionProduct.fromJson(Map<String, dynamic> json) {
+  factory TransactionProduct.fromJSON(Map<String, dynamic> json) {
     return TransactionProduct(
       id: json['id'],
       transactionId: json['transaction_id'],

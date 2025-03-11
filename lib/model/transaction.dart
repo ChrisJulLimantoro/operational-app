@@ -44,7 +44,7 @@ class Transaction {
     required this.transactionProducts,
   });
 
-  factory Transaction.fromJson(Map<String, dynamic> json) {
+  factory Transaction.fromJSON(Map<String, dynamic> json) {
     return Transaction(
       id: json['id'],
       date: DateTime.parse(json['date']),
@@ -61,14 +61,14 @@ class Transaction {
       approve: json['approve'],
       storeId: json['store_id'],
       customer: Customer.fromJSON(json['customer']),
-      employee: Employee.fromJson(json['employee']),
+      employee: Employee.fromJSON(json['employee']),
       transactionOperations:
           (json['transaction_operations'] as List)
-              .map((op) => TransactionOperation.fromJson(op))
+              .map((op) => TransactionOperation.fromJSON(op))
               .toList(),
       transactionProducts:
           (json['transaction_products'] as List)
-              .map((product) => TransactionProduct.fromJson(product))
+              .map((product) => TransactionProduct.fromJSON(product))
               .toList(),
     );
   }

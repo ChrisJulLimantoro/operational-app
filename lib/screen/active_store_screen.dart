@@ -100,7 +100,7 @@ class _ActiveStoreScreenState extends State<ActiveStoreScreen> {
                             TextCardDetail(
                               label: 'Usaha',
                               value:
-                                  '${store.company.code} | ${store.company.name}',
+                                  '${store.company?.code} | ${store.company?.name}',
                               type: "text",
                             ),
                             TextCardDetail(

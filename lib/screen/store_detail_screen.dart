@@ -48,7 +48,8 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
       },
       {
         "label": "Usaha",
-        "value": "${widget.store.company.code} | ${widget.store.company.name}",
+        "value":
+            "${widget.store.company?.code} | ${widget.store.company?.name}",
         "type": "text",
         "isLong": false,
       },

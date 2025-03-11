@@ -7,7 +7,9 @@ import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/router.dart';
 
 class ApiHelper {
-  static Dio dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'))
+  static Dio dio = Dio(
+      BaseOptions(baseUrl: 'http://192.168.1.7:3000'),
+    ) //local IP for testing
     ..interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {

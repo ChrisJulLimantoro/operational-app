@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/model/category.dart';
 import 'package:operational_app/model/product.dart';
+import 'package:operational_app/model/stock_opname.dart';
 import 'package:operational_app/model/store.dart';
 import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/screen/active_store_screen.dart';
@@ -15,6 +16,8 @@ import 'package:operational_app/screen/operation_screen.dart';
 import 'package:operational_app/screen/product_detail_screen.dart';
 import 'package:operational_app/screen/product_screen.dart';
 import 'package:operational_app/screen/setting_screen.dart';
+import 'package:operational_app/screen/stock_opname_detail_screen.dart';
+import 'package:operational_app/screen/stock_opname_screen.dart';
 import 'package:operational_app/screen/store_detail_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
@@ -85,6 +88,17 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/operation',
       builder: (context, state) => const OperationScreen(),
+    ),
+    GoRoute(
+      path: '/stock-opname',
+      builder: (context, state) => const StockOpnameScreen(),
+    ),
+    GoRoute(
+      path: '/stock-opname-detail',
+      builder: (context, state) {
+        final stockOpname = state.extra as StockOpname;
+        return StockOpnameDetailScreen(stockOpname: stockOpname);
+      },
     ),
     GoRoute(
       path: '/transaction',

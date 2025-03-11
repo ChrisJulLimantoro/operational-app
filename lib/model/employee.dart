@@ -11,7 +11,7 @@ class Employee {
     required this.createdAt,
   });
 
-  factory Employee.fromJson(Map<String, dynamic> json) {
+  factory Employee.fromJSON(Map<String, dynamic> json) {
     return Employee(
       id: json['id'],
       name: json['name'],
