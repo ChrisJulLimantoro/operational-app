@@ -15,7 +15,7 @@ void main() {
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()..loadAuthParams(context)),
-        ChangeNotifierProvider(create: (_) => StockOpnameNotifier()),
+        ChangeNotifierProvider(create: (context) => StockOpnameNotifier()),
       ],
       child: MyApp(),
     ),

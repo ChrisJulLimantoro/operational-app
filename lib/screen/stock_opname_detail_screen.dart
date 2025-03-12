@@ -8,6 +8,7 @@ import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/screen/qr_scanner_screen.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:provider/provider.dart';
 
 class StockOpnameDetailScreen extends StatefulWidget {
@@ -23,10 +24,8 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
   List<Map<String, dynamic>> stockOpnameDetails = [];
   final _scroll = ScrollController();
   String? scannedData;
-
-  // Future<void> _fetchStockOpnameDetails() async {
-  //   // Fetch stock opname details
-  // }
+  bool approve = false;
+  int status = 0;
 
   Future<void> _fetchProductCode(String categoryId) async {
     final data = await StockOpnameAPI.fetchProductCode(context, categoryId);
@@ -95,11 +94,28 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
   @override
   void initState() {
     super.initState();
+    approve = widget.stockOpname.approve;
+    status = widget.stockOpname.status;
     _initializeData();
   }
 
   void _initializeData() async {
     await _fetchProductCode(widget.stockOpname.categoryId);
+  }
+
+  Future<void> _toogleApprove(BuildContext context, bool isApproving) async {
+    // Implement your approve logic here
+    if (!context.mounted) return;
+    final response =
+        await (isApproving
+            ? StockOpnameAPI.approve(context, widget.stockOpname.id)
+            : StockOpnameAPI.disapprove(context, widget.stockOpname.id));
+    if (response) {
+      setState(() {
+        approve = isApproving;
+        status = isApproving ? 1 : 0;
+      });
+    }
   }
 
   @override
@@ -144,83 +160,109 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                            // Approve Stock Opname
+                            // Approve/Disapprove Stock Opname
+                            _toogleApprove(context, !approve);
                           },
                           child: Container(
                             height: 50, // Adjust height as needed
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: AppColors.success,
+                              color:
+                                  approve ? AppColors.error : AppColors.success,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'Approve',
+                            child: Text(
+                              approve ? 'Disapprove' : 'Approve',
                               style: AppTextStyles.labelWhite,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8), // Small gap between buttons
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            // Open Scanner
-                            _onScannedQR(context);
-                          },
-                          child: Container(
-                            height: 50, // Adjust height as needed
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.bluePrimary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Scan QR',
-                              style: AppTextStyles.labelWhite,
+                      SizedBox(
+                        width: approve ? 0 : 8,
+                      ), // Small gap between buttons
+                      approve
+                          ? SizedBox(width: 0)
+                          : Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                // Open Scanner
+                                _onScannedQR(context);
+                              },
+                              child: Container(
+                                height: 50, // Adjust height as needed
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: AppColors.bluePrimary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Scan QR',
+                                  style: AppTextStyles.labelWhite,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
                     ],
                   ),
                   // Card Barang
                   Card(
                     color: Colors.white,
                     elevation: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 12,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16.0, top: 24),
-                          child: Text(
-                            "Barang",
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24.0,
+                        horizontal: 20,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 12,
+                        children: [
+                          Text(
+                            "Detail Stock Opname",
                             style: AppTextStyles.headingBlue,
                           ),
-                        ),
-                        Divider(),
-                        ...stockOpnameDetails.map(
-                          (detail) => ListTile(
-                            title: Text(
-                              detail['name'],
-                              style: AppTextStyles.subheadingBlue,
-                            ),
-                            subtitle: Text(
-                              detail['code'],
-                              style: AppTextStyles.labelBlueItalic,
-                            ),
-                            trailing: Text(
-                              detail['scanned']
-                                  ? 'Sudah Di-Scan'
-                                  : 'Belum Di-Scan',
-                              style:
-                                  detail['scanned']
-                                      ? AppTextStyles.labelBlue
-                                      : AppTextStyles.labelPink,
+                          Divider(),
+                          TextCardDetail(
+                            label: "Tanggal",
+                            value: widget.stockOpname.date,
+                            type: "date",
+                          ),
+                          TextCardDetail(
+                            label: "Kategori",
+                            value: widget.stockOpname.category?.name,
+                            type: "text",
+                          ),
+                          TextCardDetail(
+                            label: "Cabang",
+                            value: widget.stockOpname.store?.name,
+                            type: "text",
+                          ),
+                          Divider(),
+                          ...stockOpnameDetails.map(
+                            (detail) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(
+                                detail['name'],
+                                style: AppTextStyles.subheadingBlue,
+                              ),
+                              subtitle: Text(
+                                detail['code'],
+                                style: AppTextStyles.labelBlueItalic,
+                              ),
+                              trailing: Text(
+                                detail['scanned']
+                                    ? 'Sudah Di-Scan'
+                                    : 'Belum Di-Scan',
+                                style:
+                                    detail['scanned']
+                                        ? AppTextStyles.labelBlue
+                                        : AppTextStyles.labelPink,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

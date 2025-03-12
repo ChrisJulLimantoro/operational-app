@@ -188,4 +188,126 @@ class StockOpnameAPI {
       return false;
     }
   }
+
+  static Future<bool> approve(BuildContext context, String id) async {
+    try {
+      final response = await ApiHelper.put(
+        context,
+        '/inventory/stock-opname-approve/$id',
+      );
+
+      if (!response.data['success']) {
+        throw Exception("Failed to approve stock opname");
+      }
+
+      if (!context.mounted) {
+        return false;
+      }
+
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Berhasil",
+        message: "Stock Opname berhasil diapprove",
+        primaryButtonText: "OK",
+        primaryColor: AppColors.success,
+        icon: Icons.check_circle_outline,
+        onPrimaryPressed: () {},
+      );
+
+      return true;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.receiveTimeout) {
+        NotificationHelper.showSnackbar(
+          message: "Connection timeout. Please try again.",
+          backgroundColor: AppColors.error,
+          actionLabel: "Retry",
+          onActionPressed: () => approve(context, id),
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "${e.response?.data['message'] ?? "Gagal memindai barang"}",
+          primaryButtonText: "Retry",
+          onPrimaryPressed: () => approve(context, id),
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+        );
+      }
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => approve(context, id),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    }
+  }
+
+  static Future<bool> disapprove(BuildContext context, String id) async {
+    try {
+      final response = await ApiHelper.put(
+        context,
+        '/inventory/stock-opname-disapprove/$id',
+      );
+
+      if (!response.data['success']) {
+        throw Exception("Failed to approve stock opname");
+      }
+
+      if (!context.mounted) {
+        return false;
+      }
+
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Berhasil",
+        message: "Stock Opname berhasil ditolak",
+        primaryButtonText: "OK",
+        primaryColor: AppColors.success,
+        icon: Icons.check_circle_outline,
+        onPrimaryPressed: () {},
+      );
+
+      return true;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.receiveTimeout) {
+        NotificationHelper.showSnackbar(
+          message: "Connection timeout. Please try again.",
+          backgroundColor: AppColors.error,
+          actionLabel: "Retry",
+          onActionPressed: () => approve(context, id),
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "${e.response?.data['message'] ?? "Gagal memindai barang"}",
+          primaryButtonText: "Retry",
+          onPrimaryPressed: () => approve(context, id),
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+        );
+      }
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => approve(context, id),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    }
+  }
 }

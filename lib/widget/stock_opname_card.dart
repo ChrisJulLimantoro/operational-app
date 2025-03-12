@@ -1,20 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/stock_opname.dart';
 import 'package:operational_app/model/stock_opname.dart';
+import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
+import 'package:provider/provider.dart';
 
-class StockOpnameCard extends StatelessWidget {
+class StockOpnameCard extends StatefulWidget {
   final StockOpname stockOpname;
   const StockOpnameCard({super.key, required this.stockOpname});
+
+  @override
+  State<StockOpnameCard> createState() => _StockOpnameCardState();
+}
+
+class _StockOpnameCardState extends State<StockOpnameCard> {
+  bool approve = false;
+  int status = 0;
+  Future<void> _toogleApprove(BuildContext context, bool approve) async {
+    // Implement your approve logic here
+    if (!context.mounted) return;
+    final response =
+        approve
+            ? await StockOpnameAPI.approve(context, widget.stockOpname.id)
+            : await StockOpnameAPI.disapprove(context, widget.stockOpname.id);
+    if (response) {
+      // Refresh the stock opname list
+      Provider.of<StockOpnameNotifier>(context, listen: false).markForRefresh();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    approve = widget.stockOpname.approve;
+    status = widget.stockOpname.status;
+  }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        GoRouter.of(context).push('/stock-opname-detail', extra: stockOpname);
+        GoRouter.of(
+          context,
+        ).push('/stock-opname-detail', extra: widget.stockOpname);
       },
       child: Card(
         color: Colors.white,
@@ -29,7 +61,7 @@ class StockOpnameCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${stockOpname.category?.code} | ${stockOpname.category?.name}',
+                    '${widget.stockOpname.category?.code} | ${widget.stockOpname.category?.name}',
                     style: AppTextStyles.headingBlue,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -48,7 +80,7 @@ class StockOpnameCard extends StatelessWidget {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          stockOpname.status == 0
+                          widget.stockOpname.status == 0
                               ? "Draft"
                               : "Done", // This text can expand dynamically
                           style: AppTextStyles.labelPink,
@@ -58,7 +90,7 @@ class StockOpnameCard extends StatelessWidget {
                         width: 8,
                       ), // Space between status and button
                       // Approve/Disapprove Button
-                      !stockOpname.isApproved
+                      !widget.stockOpname.approve
                           ? Container(
                             height: 32,
                             width: 48,
@@ -73,6 +105,7 @@ class StockOpnameCard extends StatelessWidget {
                               padding: EdgeInsets.all(0),
                               onPressed: () {
                                 debugPrint("Approve Button Clicked");
+                                _toogleApprove(context, true);
                               },
                             ),
                           )
@@ -89,7 +122,8 @@ class StockOpnameCard extends StatelessWidget {
                               color: AppColors.textWhite,
                               padding: EdgeInsets.all(0),
                               onPressed: () {
-                                debugPrint("Approve Button Clicked");
+                                debugPrint("Disapprove Button Clicked");
+                                _toogleApprove(context, false);
                               },
                             ),
                           ),
@@ -100,17 +134,18 @@ class StockOpnameCard extends StatelessWidget {
               Divider(),
               TextCardDetail(
                 label: 'Cabang',
-                value: '${stockOpname.store?.name}',
+                value: '${widget.stockOpname.store?.name}',
                 type: 'text',
               ),
               TextCardDetail(
                 label: 'Tanggal',
-                value: stockOpname.date,
+                value: widget.stockOpname.date,
                 type: 'date',
               ),
               TextCardDetail(
                 label: 'Barang yang telah di-scan',
-                value: '${stockOpname.details.where((d) => d.scanned).length}',
+                value:
+                    '${widget.stockOpname.details.where((d) => d.scanned).length}',
                 type: 'text',
               ),
             ],

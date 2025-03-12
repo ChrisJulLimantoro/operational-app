@@ -32,15 +32,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin(BuildContext context) async {
+    debugPrint("Hello");
     final response = await AuthAPI.login(
       context,
       _emailController.text,
       _passwordController.text,
     );
-    if (!context.mounted) return;
+    // if (!context.mounted) return;
     if (response) {
       _emailController.clear();
       _passwordController.clear();
+      debugPrint("Login success");
       context.go('/home');
     }
   }

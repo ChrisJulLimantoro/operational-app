@@ -31,6 +31,7 @@ class AuthAPI {
       if (responseData.containsKey('success') &&
           responseData['success'] == true) {
         final data = responseData['data'];
+        debugPrint(data.toString());
 
         await AuthStorage.saveAuthData(
           data['token'],
