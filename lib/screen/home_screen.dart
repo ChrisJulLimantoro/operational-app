@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
           {
             "title": "Stock Out",
             "icon": Icons.outbond_sharp,
-            "route": "/pembelian",
+            "route": "/stock-out",
           },
         ],
       },

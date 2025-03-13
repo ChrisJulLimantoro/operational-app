@@ -44,6 +44,7 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
             };
           }).toList();
     });
+    debugPrint(data.toString());
   }
 
   Future<void> _onScannedQR(BuildContext context) async {
@@ -243,7 +244,11 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
                             (detail) => ListTile(
                               contentPadding: EdgeInsets.zero,
                               title: Text(
-                                detail['name'],
+                                '${detail['name']} (${detail['status'] == 0
+                                    ? 'Ada'
+                                    : detail['status'] == 1
+                                    ? 'Terjual'
+                                    : 'Keluar'})',
                                 style: AppTextStyles.subheadingBlue,
                               ),
                               subtitle: Text(

@@ -18,6 +18,7 @@ import 'package:operational_app/screen/product_screen.dart';
 import 'package:operational_app/screen/setting_screen.dart';
 import 'package:operational_app/screen/stock_opname_detail_screen.dart';
 import 'package:operational_app/screen/stock_opname_screen.dart';
+import 'package:operational_app/screen/stock_out_screen.dart';
 import 'package:operational_app/screen/store_detail_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
@@ -99,6 +100,10 @@ final GoRouter router = GoRouter(
         final stockOpname = state.extra as StockOpname;
         return StockOpnameDetailScreen(stockOpname: stockOpname);
       },
+    ),
+    GoRoute(
+      path: '/stock-out',
+      builder: (context, state) => const StockOutScreen(),
     ),
     GoRoute(
       path: '/transaction',

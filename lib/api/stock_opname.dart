@@ -91,6 +91,7 @@ class StockOpnameAPI {
               'name': json['product']['name'],
               'type': json['product']['type']['name'],
               'weight': json['product']['weight'],
+              'status': json['status'],
               'scanned': false,
             },
           )
