@@ -6,10 +6,21 @@ import 'package:operational_app/model/category.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class CategoryAPI {
-  static Future<List<Category>> fetchCategories(BuildContext context) async {
+  static Future<List<Category>> fetchCategories(
+    BuildContext context, {
+    String? storeId,
+  }) async {
+    Map<String, dynamic> params = {};
+    if (storeId != null) {
+      params['store_id'] = storeId;
+    }
+    debugPrint("Fetching categories with params: $params");
     try {
-      final response = await ApiHelper.get(context, '/inventory/category');
-      print(response.data);
+      final response = await ApiHelper.get(
+        context,
+        '/inventory/category',
+        params: params.isEmpty ? null : params,
+      );
       if (!response.data['success']) {
         return [];
       }
@@ -20,7 +31,7 @@ class CategoryAPI {
         throw Exception("Unexpected response format");
       }
       final result =
-          (response.data['data'] as List)
+          (response.data['data']['data'] as List)
               .map((json) => Category.fromJSON(json))
               .toList();
       return result;

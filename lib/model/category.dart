@@ -67,4 +67,36 @@ class Category {
       createdAt: DateTime.tryParse(json['created_at']),
     );
   }
+
+  factory Category.copy(Category category) {
+    return Category(
+      id: category.id,
+      code: category.code,
+      name: category.name,
+      purity: category.purity,
+      metalType: category.metalType,
+      weightTray: category.weightTray,
+      weightPaper: category.weightPaper,
+      types: category.types,
+      description: category.description,
+      company: category.company,
+      createdAt: category.createdAt,
+    );
+  }
+
+  factory Category.empty() {
+    return Category(
+      id: '',
+      code: '',
+      name: '',
+      purity: '',
+      metalType: MetalType.other,
+      weightTray: 0,
+      weightPaper: 0,
+      types: [],
+      description: '',
+      company: null,
+      createdAt: DateTime.now(),
+    );
+  }
 }

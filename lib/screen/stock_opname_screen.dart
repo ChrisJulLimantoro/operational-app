@@ -3,10 +3,14 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/category.dart';
 import 'package:operational_app/api/stock_opname.dart';
+import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/format_date.dart';
+import 'package:operational_app/model/category.dart';
 import 'package:operational_app/model/stock_opname.dart';
 import 'package:operational_app/notifier/stock_opname_notifier.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/stock_opname_card.dart';
 import 'package:provider/provider.dart';
@@ -23,16 +27,20 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
   final search = TextEditingController();
   List<StockOpname> stockOpnames = List.empty(growable: true);
   Map<DateTime, List<StockOpname>> groupedStockOpnames = {}; // Grouped by date
+  List<Category> categories = List.empty(growable: true);
   int page = 1;
   bool isLoading = false;
   bool isRefresh = false;
   bool hasMore = true;
+  final dateController = TextEditingController();
+  Category? selectedCategory;
 
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
     _fetchStockOpnames();
+    _fetchCategories();
   }
 
   @override
@@ -127,6 +135,15 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
     }
   }
 
+  Future<void> _fetchCategories() async {
+    final authCubit = context.read<AuthCubit>();
+    List<Category> newCategories = await CategoryAPI.fetchCategories(
+      context,
+      storeId: authCubit.state.storeId,
+    );
+    setState(() => categories = newCategories);
+  }
+
   Timer? _debounce;
 
   void _onScroll() {
@@ -147,6 +164,42 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
         _refreshStockOpnames();
       }
     });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      dateController.text = "${picked.toLocal()}".split(' ')[0]; // Format date
+    }
+  }
+
+  Future<void> _createStockOpname(BuildContext context) async {
+    if (selectedCategory != null && dateController.text.isNotEmpty) {
+      try {
+        final so = await StockOpnameAPI.createStockOpname(
+          context,
+          dateController.text,
+          selectedCategory!.id,
+        );
+        if (!context.mounted) {
+          return;
+        }
+
+        if (so == null) {
+          return;
+        }
+
+        GoRouter.of(context).push('/stock-opname-detail', extra: so);
+      } catch (e) {
+        debugPrint("Error creating stock opname: $e");
+      }
+    }
   }
 
   @override
@@ -212,6 +265,154 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
               ),
             ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (BuildContext context) {
+              return SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                    left: 24,
+                    right: 24,
+                    top: 28,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Add New Stock Opname',
+                        style: AppTextStyles.headingBlue,
+                      ),
+                      SizedBox(height: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            controller: dateController,
+                            readOnly: true, // Prevent manual input
+                            decoration: InputDecoration(
+                              icon: Icon(Icons.calendar_today),
+                              labelText: "Select Date",
+                            ),
+                            onTap: () => _selectDate(context),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        "Select Category",
+                        style: AppTextStyles.subheadingBlue,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButton<Category?>(
+                            key: ValueKey(selectedCategory),
+                            value:
+                                categories.contains(selectedCategory)
+                                    ? selectedCategory
+                                    : null,
+                            hint: Text("Select a category"),
+                            isExpanded:
+                                true, // Makes the dropdown take full width
+                            items:
+                                categories.map((Category item) {
+                                  return DropdownMenuItem<Category>(
+                                    value: item,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(item.name),
+                                        if (selectedCategory?.id == item.id)
+                                          Icon(
+                                            Icons.check,
+                                            color: AppColors.bluePrimary,
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                            onChanged: (Category? newValue) {
+                              setState(() {
+                                selectedCategory = newValue!;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.pinkPrimary,
+                                borderRadius: BorderRadius.circular(
+                                  8,
+                                ), // Optional for rounded corners
+                              ),
+                              child: TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white, // Text color
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text('Cancel'),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.bluePrimary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  // Handle form submission
+                                  Navigator.pop(context);
+                                  _createStockOpname(context);
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text('Save'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 50),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        backgroundColor: AppColors.pinkPrimary,
+        child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );
   }

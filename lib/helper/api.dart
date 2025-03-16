@@ -48,6 +48,15 @@ class ApiHelper {
           }
         },
         onError: (DioException error, handler) async {
+          // Check if response data is a Map
+          if (error.response?.data is Map<String, dynamic>) {
+            debugPrint('Error Response Data (JSON): ${error.response?.data}');
+          } else {
+            debugPrint(
+              'Error Response Data: ${error.response?.data?.toString()}',
+            );
+          }
+
           if (error.response?.statusCode == 401) {
             await AuthStorage.clearAuthData();
             final currentContext = navigatorKey.currentContext;
@@ -63,7 +72,6 @@ class ApiHelper {
       ),
     );
 
-  // ✅ API methods now require `context` explicitly to ensure access to Bloc
   static Future<Response> get(
     BuildContext context,
     String endpoint, {

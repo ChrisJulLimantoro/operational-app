@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/stock_opname.dart';
@@ -310,5 +311,89 @@ class StockOpnameAPI {
       );
       return false;
     }
+  }
+
+  // Create StockOpname FROM API
+  static Future<StockOpname?> createStockOpname(
+    BuildContext context,
+    String date,
+    String categoryId,
+  ) async {
+    try {
+      final response = await ApiHelper.post(
+        context,
+        '/inventory/stock-opname',
+        data: {
+          'date': date,
+          'category_id': categoryId,
+          'status': 0,
+          'description': null,
+        },
+      );
+
+      if (!response.data['success']) {
+        throw Exception("Failed to create stock opname");
+      }
+
+      if (!context.mounted) {
+        return null;
+      }
+
+      final so = StockOpname.fromJSON(response.data['data']);
+
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Berhasil",
+        message: "Stock Opname berhasil dibuat",
+        primaryButtonText: "OK",
+        primaryColor: AppColors.success,
+        icon: Icons.check_circle_outline,
+        onPrimaryPressed: () {},
+      );
+      return so;
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.receiveTimeout) {
+        NotificationHelper.showSnackbar(
+          message: "Connection timeout. Please try again.",
+          backgroundColor: AppColors.error,
+          actionLabel: "Retry",
+          onActionPressed: () => createStockOpname(context, date, categoryId),
+        );
+      } else if (e.response?.data['statusCode'] == 400) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Stok Opname pada kategori dan tanggal ini sudah dibuat!",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () => {},
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+        );
+      } else {
+        debugPrint("Error: ${e.response?.data}");
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message:
+              "${e.response?.data['message'] ?? "Gagal Membuat Stock Opname"}",
+          primaryButtonText: "Retry",
+          onPrimaryPressed: () => createStockOpname(context, date, categoryId),
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+        );
+      }
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => createStockOpname(context, date, categoryId),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+    }
+    return null;
   }
 }
