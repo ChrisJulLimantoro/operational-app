@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/product.dart';
@@ -48,6 +50,43 @@ class ProductAPI {
         primaryColor: AppColors.error,
       );
       return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> fetchProductCode(
+    BuildContext context,
+    String barcode,
+  ) async {
+    try {
+      final response = await ApiHelper.get(
+        context,
+        '/inventory/product-barcode/$barcode',
+        params: {'store': context.read<AuthCubit>().state.storeId},
+      );
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      debugPrint(response.data['data'].toString());
+      return response.data['data'];
+    } on DioException catch (e) {
+      if (!context.mounted) return null;
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchProductCode(context, barcode),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
     }
   }
 }

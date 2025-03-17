@@ -36,7 +36,7 @@ class QRScannerView extends StatelessWidget {
               child:
                   scannedData != null
                       ? Text(
-                        "Detected: $scannedData",
+                        "Scanned Succesfully",
                         style: const TextStyle(fontSize: 18),
                       )
                       : const Text(

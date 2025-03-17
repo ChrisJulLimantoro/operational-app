@@ -170,6 +170,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         "${activeStore?.code ?? "-"} | ${activeStore?.name ?? "-"}",
                         style: AppTextStyles.headingWhite,
                       ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.change_circle,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          GoRouter.of(context).push("/active-store");
+                        },
+                      ),
                       Spacer(),
                       IconButton(
                         onPressed: () {},

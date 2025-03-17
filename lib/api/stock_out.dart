@@ -102,4 +102,49 @@ class StockOutAPI {
       return false;
     }
   }
+
+  static Future<bool> saveStockOut(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await ApiHelper.post(
+        context,
+        '/inventory/stock-out',
+        data: data,
+      );
+
+      if (!response.data['success']) {
+        throw Exception("Failed to stock out");
+      }
+      debugPrint(response.toString());
+
+      if (!context.mounted) return false;
+
+      return true;
+    } on DioException catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal melakukan stock out",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "OK",
+        onPrimaryPressed: () => {},
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal melakukan stock out",
+        message: "$e",
+        primaryButtonText: "OK",
+        onPrimaryPressed: () => {},
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    }
+  }
 }

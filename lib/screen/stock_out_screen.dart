@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/stock_out.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/stock_out.dart';
+import 'package:operational_app/notifier/stock_out_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
+import 'package:provider/provider.dart';
 
 class StockOutScreen extends StatefulWidget {
   const StockOutScreen({super.key});
@@ -39,6 +41,16 @@ class _StockOutScreenState extends State<StockOutScreen> {
     _scroll.dispose();
     search.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final notifier = Provider.of<StockOutNotifier>(context);
+    if (notifier.shouldRefresh) {
+      _refreshStockOuts();
+      notifier.resetRefresh();
+    }
   }
 
   Future<void> _fetchStockOuts() async {
@@ -77,7 +89,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
     setState(() => isLoading = false);
   }
 
-  Future<void> _refreshStockOpnames() async {
+  Future<void> _refreshStockOuts() async {
     if (isLoading) return;
     isRefresh = true;
     setState(() {
@@ -149,7 +161,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
       }
 
       if (offset <= -40) {
-        _refreshStockOpnames();
+        _refreshStockOuts();
       }
     });
   }
@@ -287,6 +299,13 @@ class _StockOutScreenState extends State<StockOutScreen> {
               ),
             ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/stock-out/add');
+        },
+        backgroundColor: AppColors.pinkPrimary,
+        child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );
   }

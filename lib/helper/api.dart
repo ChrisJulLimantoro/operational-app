@@ -8,7 +8,7 @@ import 'package:operational_app/helper/router.dart';
 
 class ApiHelper {
   static Dio dio = Dio(
-      BaseOptions(baseUrl: 'http://127.0.0.1:3000'),
+      BaseOptions(baseUrl: 'http://192.168.0.101:3000'),
     ) //local IP for testing
     ..interceptors.add(
       InterceptorsWrapper(

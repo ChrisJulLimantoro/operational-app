@@ -4,6 +4,7 @@ import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/helper/router.dart';
 import 'package:operational_app/notifier/stock_opname_notifier.dart';
+import 'package:operational_app/notifier/stock_out_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +17,7 @@ void main() {
       providers: [
         BlocProvider(create: (context) => AuthCubit()..loadAuthParams(context)),
         ChangeNotifierProvider(create: (context) => StockOpnameNotifier()),
+        ChangeNotifierProvider(create: (context) => StockOutNotifier()),
       ],
       child: MyApp(),
     ),
