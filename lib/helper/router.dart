@@ -13,6 +13,7 @@ import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
 import 'package:operational_app/screen/company_screen.dart';
 import 'package:operational_app/screen/operation_screen.dart';
+import 'package:operational_app/screen/pdf_viewer_screen.dart';
 import 'package:operational_app/screen/product_detail_screen.dart';
 import 'package:operational_app/screen/product_screen.dart';
 import 'package:operational_app/screen/setting_screen.dart';
@@ -119,6 +120,16 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final transaction = state.extra as Transaction;
         return TransactionDetailScreen(transaction: transaction);
+      },
+    ),
+    GoRoute(
+      path: '/pdf-viewer',
+      builder: (context, state) {
+        final data = state.extra as Map<String, dynamic>;
+        return PDFViewerScreen(
+          pdfUrl: data['pdfUrl'],
+          fileName: data['fileName'],
+        );
       },
     ),
   ],

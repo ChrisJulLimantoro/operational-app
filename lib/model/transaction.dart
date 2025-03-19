@@ -18,6 +18,7 @@ class Transaction {
   final String comment;
   final int approve;
   final String storeId;
+  final String? notaLink;
   final Customer? customer;
   final Employee? employee;
   final List<TransactionProduct> transactionProducts;
@@ -40,6 +41,7 @@ class Transaction {
     required this.approve,
     required this.customer,
     required this.employee,
+    this.notaLink,
     required this.transactionOperations,
     required this.transactionProducts,
   });
@@ -60,6 +62,7 @@ class Transaction {
       comment: json['comment'] ?? '-',
       approve: json['approve'],
       storeId: json['store_id'],
+      notaLink: json['nota_link'],
       customer: Customer.fromJSON(json['customer']),
       employee: Employee.fromJSON(json['employee']),
       transactionOperations:

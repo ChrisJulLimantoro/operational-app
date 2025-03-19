@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/model/transaction_operation.dart';
 import 'package:operational_app/model/transaction_product.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:operational_app/widget/transaction_operation_section.dart';
@@ -22,6 +24,21 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   List<TransactionProduct> itemBought = [];
   List<TransactionOperation> operations = [];
   bool isOpen = false;
+
+  void _viewNota() {
+    if (widget.transaction.notaLink == null) {
+      debugPrint("Nota link is null.");
+      return;
+    }
+
+    context.push(
+      '/pdf-viewer',
+      extra: {
+        'pdfUrl': widget.transaction.id,
+        'fileName': 'nota-${widget.transaction.code}',
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -103,6 +120,30 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 8,
                 children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            // Printing Nota
+                            _viewNota();
+                          },
+                          child: Container(
+                            height: 50, // Adjust height as needed
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.pinkPrimary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              "View Nota",
+                              style: AppTextStyles.labelWhite,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   Card(
                     color: Colors.white,
                     elevation: 1,

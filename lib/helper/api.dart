@@ -8,7 +8,8 @@ import 'package:operational_app/helper/router.dart';
 
 class ApiHelper {
   static Dio dio = Dio(
-      BaseOptions(baseUrl: 'http://192.168.0.101:3000'),
+      // BaseOptions(baseUrl: 'http://192.168.0.101:3000'), // IP FOR WIFI GACOR
+      BaseOptions(baseUrl: 'http://127.0.0.1:3000'), //local IP for testing
     ) //local IP for testing
     ..interceptors.add(
       InterceptorsWrapper(
@@ -40,7 +41,7 @@ class ApiHelper {
                 },
               });
             }
-
+            debugPrint('Options : ${options.responseType}');
             handler.next(options);
           } catch (e) {
             debugPrint("Error in API interceptor: $e");
@@ -76,8 +77,9 @@ class ApiHelper {
     BuildContext context,
     String endpoint, {
     Map<String, dynamic>? params,
+    Options? options,
   }) async {
-    return await dio.get(endpoint, queryParameters: params);
+    return await dio.get(endpoint, queryParameters: params, options: options);
   }
 
   static Future<Response> post(
