@@ -31,6 +31,10 @@ class TransactionProductSection extends StatelessWidget {
           children: [
             Text(title, style: AppTextStyles.headingBlue),
             Divider(),
+            if (products.isEmpty)
+              Center(
+                child: Text("Belum ada produk", style: AppTextStyles.labelPink),
+              ),
             ...products.map(
               (product) => TransactionDetailCard(transactionProduct: product),
             ),

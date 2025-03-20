@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:operational_app/api/transaction.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/transaction_card.dart';
@@ -199,6 +200,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
               ),
             ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/transaction/add');
+        },
+        backgroundColor: AppColors.pinkPrimary,
+        child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );
   }

@@ -37,4 +37,21 @@ class TransactionOperation {
       comment: json['comment'] ?? '-',
     );
   }
+
+  static Map<String, dynamic> toJSON(TransactionOperation to) {
+    return {
+      'id': to.id,
+      'transaction_id': to.transactionId,
+      'operation_id': to.operationId,
+      'type': to.type,
+      'name': to.name,
+      'unit': to.unit,
+      'quantity': to.unit,
+      'price': to.price,
+      'adjustment_price': to.adjustmentPrice,
+      'total_price': to.totalPrice,
+      'comment': to.comment,
+      'detail_type': 'operation',
+    };
+  }
 }

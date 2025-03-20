@@ -50,4 +50,38 @@ class OperationAPI {
       return [];
     }
   }
+
+  static Future<Operation?> fetchOperation(
+    BuildContext context,
+    String id,
+  ) async {
+    // Fetch a single operation from the server
+    try {
+      final response = await ApiHelper.get(context, '/inventory/operation/$id');
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      return Operation.fromJSON(response.data['data']);
+    } on DioException catch (e) {
+      // Handle Error
+      if (!context.mounted) return null;
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchOperation(context, id),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    }
+  }
 }

@@ -55,32 +55,32 @@ class _TransactionCardState extends State<TransactionCard> {
                     Row(
                       children: [
                         // Expandable Status Container
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12, // More padding for dynamic text
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.pinkTertiary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            trans.status == 0
-                                ? "Draft"
-                                : trans.status == 1
-                                ? "Pending"
-                                : trans.status == 2
-                                ? "Paid"
-                                : trans.status == 3
-                                ? "Taken"
-                                : "Cancel", // This text can expand dynamically
-                            style: AppTextStyles.labelPink,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 8,
-                        ), // Space between status and button
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(
+                        //     horizontal: 12, // More padding for dynamic text
+                        //     vertical: 6,
+                        //   ),
+                        //   decoration: BoxDecoration(
+                        //     color: AppColors.pinkTertiary,
+                        //     borderRadius: BorderRadius.circular(8),
+                        //   ),
+                        //   alignment: Alignment.center,
+                        //   child: Text(
+                        //     trans.status == 0
+                        //         ? "Draft"
+                        //         : trans.status == 1
+                        //         ? "Pending"
+                        //         : trans.status == 2
+                        //         ? "Paid"
+                        //         : trans.status == 3
+                        //         ? "Taken"
+                        //         : "Cancel", // This text can expand dynamically
+                        //     style: AppTextStyles.labelPink,
+                        //   ),
+                        // ),
+                        // const SizedBox(
+                        //   width: 8,
+                        // ), // Space between status and button
                         // Approve/Disapprove Button
                         trans.approve == 0
                             ? Container(
@@ -162,11 +162,11 @@ class _TransactionCardState extends State<TransactionCard> {
                         children: [
                           Text("Payment", style: AppTextStyles.labelPink),
                           Text(
-                            trans.paymentMethod == 0
+                            trans.paymentMethod == 1
                                 ? "Cash"
-                                : trans.paymentMethod == 1
-                                ? "Debit"
-                                : "QRIS",
+                                : trans.paymentMethod == 2
+                                ? "Transfer"
+                                : "Debit",
                             style: AppTextStyles.bodyBlue,
                           ),
                         ],

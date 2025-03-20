@@ -44,7 +44,7 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                 children: [
                   Text(
                     CurrencyHelper.formatRupiah(
-                      widget.transactionProduct.price,
+                      widget.transactionProduct.totalPrice,
                     ),
                     style: AppTextStyles.labelPink,
                   ),

@@ -25,22 +25,24 @@ class TransactionOperationSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
           children: [
             Text(title, style: AppTextStyles.headingBlue),
             Divider(),
+            if (operations.isEmpty)
+              Center(
+                child: Text("Belum ada jasa", style: AppTextStyles.labelPink),
+              ),
             ...operations.map(
-              (operation) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ItemCardDetail(
-                      name: operation.name.split(' - ')[1],
-                      code: operation.name.split(' - ')[0],
-                      totalPrice: operation.totalPrice,
-                    ),
-                  ],
-                ),
+              (operation) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ItemCardDetail(
+                    name: operation.name.split(' - ')[1],
+                    code: operation.name.split(' - ')[0],
+                    totalPrice: operation.totalPrice,
+                  ),
+                ],
               ),
             ),
             Divider(),

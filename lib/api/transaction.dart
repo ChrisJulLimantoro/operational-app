@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/transaction.dart';
@@ -53,6 +55,63 @@ class TransactionAPI {
         primaryColor: AppColors.error,
       );
       return [];
+    }
+  }
+
+  static Future<bool> submitTransaction(
+    BuildContext context,
+    Map<String, dynamic> form,
+  ) async {
+    try {
+      final authCubit = context.read<AuthCubit>();
+      form['employee_id'] = authCubit.state.userId;
+      form['store_id'] = authCubit.state.storeId;
+      form['date'] = form['date'].toString();
+
+      final response = await ApiHelper.post(
+        context,
+        '/transaction/transaction',
+        data: form,
+      );
+      debugPrint(response.data.toString());
+      if (!context.mounted) return false;
+      if (!response.data['success']) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: response.data['message'],
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+
+      return true;
+    } on DioException catch (e) {
+      debugPrint('Error submitting transaction: $e');
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengirim data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => submitTransaction(context, form),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => submitTransaction(context, form),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
     }
   }
 }

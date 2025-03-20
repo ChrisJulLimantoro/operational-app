@@ -46,4 +46,23 @@ class TransactionProduct {
       comment: json['comment'] ?? '-',
     );
   }
+  static Map<String, dynamic> toJSON(TransactionProduct tp) {
+    return {
+      'id': tp.id,
+      'transaction_id': tp.transactionId,
+      'product_code_id': tp.productCodeId,
+      'transaction_type': tp.transactionType,
+      'name': tp.name,
+      'type': tp.type,
+      'weight': tp.weight,
+      'quantity': tp.weight,
+      'price': tp.price,
+      'discount': tp.discount,
+      'adjustment_price': tp.adjustmentPrice,
+      'total_price': tp.totalPrice,
+      'status': tp.status,
+      'comment': tp.comment,
+      'detail_type': 'product',
+    };
+  }
 }

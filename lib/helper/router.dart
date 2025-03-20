@@ -22,6 +22,7 @@ import 'package:operational_app/screen/stock_opname_screen.dart';
 import 'package:operational_app/screen/stock_out_add_screen.dart';
 import 'package:operational_app/screen/stock_out_screen.dart';
 import 'package:operational_app/screen/store_detail_screen.dart';
+import 'package:operational_app/screen/transaction_add_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
 import 'package:operational_app/screen/category_screen.dart';
@@ -120,6 +121,12 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final transaction = state.extra as Transaction;
         return TransactionDetailScreen(transaction: transaction);
+      },
+    ),
+    GoRoute(
+      path: '/transaction/add',
+      builder: (context, state) {
+        return const TransactionAddScreen();
       },
     ),
     GoRoute(
