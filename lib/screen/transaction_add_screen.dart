@@ -9,6 +9,7 @@ import 'package:operational_app/model/customer.dart';
 import 'package:operational_app/model/operation.dart';
 import 'package:operational_app/model/transaction_operation.dart';
 import 'package:operational_app/model/transaction_product.dart';
+import 'package:operational_app/notifier/sales_notifier.dart';
 import 'package:operational_app/screen/qr_scanner_screen.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
@@ -19,6 +20,7 @@ import 'package:operational_app/widget/text_form.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:operational_app/widget/transaction_operation_section.dart';
 import 'package:operational_app/widget/transaction_product_section.dart';
+import 'package:provider/provider.dart';
 
 class TransactionAddScreen extends StatefulWidget {
   final int type;
@@ -339,7 +341,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         primaryColor: AppColors.success,
         primaryButtonText: "OK",
         onPrimaryPressed: () {
-          GoRouter.of(context).go('/transaction');
+          Provider.of<SalesNotifier>(context, listen: false).markForRefresh();
+          context.pop();
         },
       );
     }

@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:operational_app/api/transaction.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/notifier/sales_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/transaction_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -33,6 +35,16 @@ class _TransactionScreenState extends State<TransactionScreen> {
     super.initState();
     _scroll.addListener(_onScroll);
     _fetchTransactions();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final notifier = Provider.of<SalesNotifier>(context);
+    if (notifier.shouldRefresh) {
+      _refreshTransactions();
+      notifier.resetRefresh();
+    }
   }
 
   @override
