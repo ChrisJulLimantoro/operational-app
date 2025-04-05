@@ -181,11 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Spacer(),
                       IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.notifications),
-                        color: Colors.white,
-                      ),
-                      IconButton(
                         onPressed: () {
                           GoRouter.of(context).push("/setting");
                         },

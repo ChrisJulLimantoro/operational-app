@@ -17,7 +17,7 @@ class TransactionAPI {
     try {
       final response = await ApiHelper.get(
         context,
-        '/transaction/transaction',
+        '/transaction/sales',
         params: {'page': page, 'limit': limit},
       );
       if (!response.data['success']) {
