@@ -3,6 +3,7 @@ import 'package:operational_app/api/auth.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:math';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(
-              height: MediaQuery.of(context).size.height - 300,
+              height: max(MediaQuery.of(context).size.height - 300, 500),
               child: Container(
                 width: double.infinity,
                 color: Colors.white,

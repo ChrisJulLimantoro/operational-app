@@ -69,24 +69,19 @@ class _HomeScreenState extends State<HomeScreen> {
         "group": "Menu Laporan",
         "items": [
           {
-            "title": "Pendapatan",
+            "title": "Laba rugi",
             "icon": Icons.bar_chart,
-            "route": "/pendapatan",
+            "route": "/profit-loss",
           },
           {
-            "title": "Pengeluaran",
-            "icon": Icons.money_off,
-            "route": "/pengeluaran",
-          },
-          {
-            "title": "Keuangan",
-            "icon": Icons.account_balance,
-            "route": "/keuangan",
-          },
-          {
-            "title": "Inventory",
+            "title": "Mutasi Stok",
             "icon": Icons.inventory,
-            "route": "/inventory",
+            "route": "/stock-mutation",
+          },
+          {
+            "title": "Kartu Stok",
+            "icon": Icons.checklist,
+            "route": "/stock-card",
           },
         ],
       },
@@ -96,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Color> _tabColors = [
     AppColors.bluePrimary, // Master
     AppColors.pinkPrimary, // Transaksi
-    AppColors.pinkSecondary, // Laporan
+    AppColors.pinkPrimary, // Laporan
   ];
 
   void _onItemTapped(int index) {
