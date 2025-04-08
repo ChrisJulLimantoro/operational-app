@@ -10,8 +10,8 @@ import 'package:operational_app/theme/colors.dart';
 class ProductAPI {
   static Future<List<Product>> fetchProducts(
     BuildContext context,
-    int page,
-    int limit,
+    int? page,
+    int? limit,
   ) async {
     // Fetch products from the server
     try {

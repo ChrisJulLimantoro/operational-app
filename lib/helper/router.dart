@@ -27,6 +27,9 @@ import 'package:operational_app/screen/transaction_detail_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
 import 'package:operational_app/screen/category_screen.dart';
 import 'package:operational_app/screen/store_screen.dart';
+import 'package:operational_app/screen/profit_loss_screen.dart';
+import 'package:operational_app/screen/stock_mutation_screen.dart';
+import 'package:operational_app/screen/stock_card_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final isLogin = false;
@@ -138,6 +141,18 @@ final GoRouter router = GoRouter(
           fileName: data['fileName'],
         );
       },
+    ),
+    GoRoute(
+      path: '/profit-loss',
+      builder: (context, state) => const ProfitLossScreen(),
+    ),
+    GoRoute(
+      path: '/stock-mutation',
+      builder: (context, state) => const StockMutationScreen(),
+    ),
+    GoRoute(
+      path: '/stock-card',
+      builder: (context, state) => const StockCardScreen(),
     ),
   ],
 );
