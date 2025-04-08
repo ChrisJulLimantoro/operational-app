@@ -9,16 +9,17 @@ import 'package:operational_app/theme/colors.dart';
 
 class ProductAPI {
   static Future<List<Product>> fetchProducts(
-    BuildContext context,
-    int? page,
-    int? limit,
-  ) async {
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     // Fetch products from the server
     try {
       final response = await ApiHelper.get(
         context,
         '/inventory/product',
-        params: {'page': page, 'limit': limit},
+        params: {'page': page, 'limit': limit, 'search': search},
       );
       if (!response.data['success']) {
         return [];
@@ -45,7 +46,13 @@ class ProductAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchProducts(context, page, limit),
+        onPrimaryPressed:
+            () => fetchProducts(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

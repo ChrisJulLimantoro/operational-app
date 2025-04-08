@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/category.dart';
 import 'package:operational_app/model/category.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -16,11 +18,13 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
+  final search = TextEditingController();
   final _scroll = ScrollController();
-  List<Category> companies = List.empty(growable: true);
+  List<Category> categories = List.empty(growable: true);
+  int page = 1;
   bool isLoading = false;
   bool isRefresh = false;
-  List<Map<String, dynamic>> items = [];
+  bool hasMore = true;
 
   @override
   void initState() {
@@ -32,32 +36,47 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void dispose() {
     super.dispose();
+    search.dispose();
     _scroll.dispose();
   }
 
   Future<void> _fetchCategories() async {
-    if (isLoading) return;
+    if (isLoading || !hasMore) return;
 
     setState(() => isLoading = true);
 
     try {
-      List<Category> newCompanies = await CategoryAPI.fetchCategories(context);
+      List<Category> newCategories = await CategoryAPI.fetchCategories(
+        context,
+        page: page,
+        limit: 10,
+        search: search.text,
+      );
 
-      debugPrint('Fetched ${newCompanies.length} companies');
+      debugPrint('Fetched ${newCategories.length} categories');
+      if (newCategories.isEmpty) {
+        setState(() => hasMore = false);
+      } else {
+        Set<String> existingIds =
+            categories.map((category) => category.id).toSet();
 
-      Set<String> existingIds =
-          companies.map((category) => category.id).toSet();
+        List<Category> uniqueCategories =
+            newCategories
+                .where((category) => !existingIds.contains(category.id))
+                .toList();
 
-      List<Category> uniqueCompanies =
-          newCompanies
-              .where((category) => !existingIds.contains(category.id))
-              .toList();
-
-      if (uniqueCompanies.isNotEmpty) {
-        companies.addAll(uniqueCompanies);
+        if (uniqueCategories.isNotEmpty) {
+          page++;
+          await Future.delayed(
+            Duration(milliseconds: 400),
+          ); // 🚀 Ensure UI updates
+          categories.addAll(uniqueCategories);
+        } else {
+          setState(() => hasMore = false);
+        }
       }
     } catch (e) {
-      debugPrint("Error fetching companies: $e");
+      debugPrint("Error fetching categories: $e");
     }
 
     setState(() => isLoading = false);
@@ -68,24 +87,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
     isRefresh = true;
     setState(() {
       isLoading = true;
-      companies.clear();
+      categories.clear();
+      page = 1;
+      hasMore = true;
     });
 
     _scroll.removeListener(_onScroll);
 
     try {
-      List<Category> latestCompanies = await CategoryAPI.fetchCategories(
+      List<Category> latestCategories = await CategoryAPI.fetchCategories(
         context,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
-      if (latestCompanies.isNotEmpty) {
-        companies.addAll(latestCompanies);
+      if (latestCategories.isNotEmpty) {
+        page++;
+        categories.addAll(latestCategories);
+      } else {
+        setState(() => hasMore = false);
       }
 
-      await Future.delayed(Duration(milliseconds: 200)); // 🚀 Ensure UI updates
+      await Future.delayed(Duration(milliseconds: 400)); // 🚀 Ensure UI updates
       _scroll.jumpTo(1);
     } catch (e) {
-      debugPrint("Error fetching newest companies: $e");
+      debugPrint("Error fetching newest categories: $e");
     }
 
     _scroll.addListener(_onScroll);
@@ -103,6 +130,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
       if (isLoading) return; // Avoid duplicate API calls
 
       double offset = _scroll.position.pixels;
+      double maxScroll = _scroll.position.maxScrollExtent;
+
+      if (offset >= maxScroll - 100 && hasMore) {
+        _fetchCategories();
+      }
 
       if (offset <= -40) {
         _refreshCategories();
@@ -110,10 +142,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshCategories();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
+        controller: _scroll,
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             pinned: true, // Ensures the app bar remains visible when scrolling
@@ -135,9 +176,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 0,
                 children: [
-                  // SearchBarWidget(controller: search),
-                  // Companies
-                  ...companies.map(
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ),
+                  // Categories
+                  ...categories.map(
                     (category) => InkWell(
                       onTap: () {
                         context.push('/category-detail', extra: category);
@@ -198,6 +242,29 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
             ),
           ),
+          // No Data Indicator
+          if (categories.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada kategori ditemukan",
+                        style: AppTextStyles.headingBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(

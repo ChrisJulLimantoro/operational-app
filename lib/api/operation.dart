@@ -7,16 +7,17 @@ import 'package:operational_app/theme/colors.dart';
 
 class OperationAPI {
   static Future<List<Operation>> fetchOperations(
-    BuildContext context,
-    int page,
-    int limit,
-  ) async {
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     // Fetch products from the server
     try {
       final response = await ApiHelper.get(
         context,
         '/inventory/operation',
-        params: {'page': page, 'limit': limit},
+        params: {'page': page, 'limit': limit, 'search': search},
       );
       if (!response.data['success']) {
         return [];
@@ -43,7 +44,13 @@ class OperationAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchOperations(context, page, limit),
+        onPrimaryPressed:
+            () => fetchOperations(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

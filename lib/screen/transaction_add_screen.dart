@@ -173,7 +173,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   // Open Prompt to Insert Product Barcode
   Future<void> _showPromptOperation() async {
     String selectedOperation = '';
-    List<Operation> ops = await OperationAPI.fetchOperations(context, 0, 0);
+    List<Operation> ops = await OperationAPI.fetchOperations(context);
     final selected = await showModalBottomSheet(
       context: context,
       isDismissible: true,

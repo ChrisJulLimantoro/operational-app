@@ -36,11 +36,12 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   @override
   void dispose() {
     super.dispose();
+    search.dispose();
     _scroll.dispose();
   }
 
   Future<void> _fetchEmployees() async {
-    if (isLoading) return;
+    if (isLoading || !hasMore) return;
 
     setState(() => isLoading = true);
 

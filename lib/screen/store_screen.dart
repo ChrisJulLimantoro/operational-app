@@ -36,6 +36,7 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   void dispose() {
     super.dispose();
+    search.dispose();
     _scroll.dispose();
   }
 
@@ -129,6 +130,11 @@ class _StoreScreenState extends State<StoreScreen> {
       if (isLoading) return; // Avoid duplicate API calls
 
       double offset = _scroll.position.pixels;
+      double maxScroll = _scroll.position.maxScrollExtent;
+
+      if (offset >= maxScroll - 100 && hasMore) {
+        _fetchStores();
+      }
 
       if (offset <= -40) {
         _refreshStores();
@@ -154,7 +160,7 @@ class _StoreScreenState extends State<StoreScreen> {
             pinned: true, // Ensures the app bar remains visible when scrolling
             floating: false, // No snap effect
             elevation: 0,
-            title: Text('Usaha', style: AppTextStyles.headingWhite),
+            title: Text('Cabang', style: AppTextStyles.headingWhite),
             leading: IconButton(
               icon: Icon(CupertinoIcons.arrow_left, color: Colors.white),
               onPressed: () {

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:operational_app/api/product.dart';
 import 'package:operational_app/model/product.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 
 class ProductScreen extends StatefulWidget {
@@ -46,8 +48,9 @@ class _ProductScreenState extends State<ProductScreen> {
     try {
       List<Product> newProducts = await ProductAPI.fetchProducts(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
       if (newProducts.isEmpty) {
@@ -87,11 +90,13 @@ class _ProductScreenState extends State<ProductScreen> {
     try {
       List<Product> latestProducts = await ProductAPI.fetchProducts(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
       if (latestProducts.isNotEmpty) {
+        page++;
         products.addAll(latestProducts);
       } else {
         hasMore = false;
@@ -130,6 +135,13 @@ class _ProductScreenState extends State<ProductScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,10 +165,14 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Column(
-                spacing: 8,
+                spacing: 0,
                 children: [
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ),
                   ...products.map(
                     (product) => InkWell(
                       onTap: () {
@@ -211,6 +227,29 @@ class _ProductScreenState extends State<ProductScreen> {
               ),
             ),
           ),
+          // No Data Indicator
+          if (products.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada Produk ditemukan",
+                        style: AppTextStyles.headingBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(

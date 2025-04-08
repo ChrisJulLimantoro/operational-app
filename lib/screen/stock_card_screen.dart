@@ -69,7 +69,7 @@ class _StockCardScreenState extends State<StockCardScreen> {
     setState(() => isLoadingProduct = true);
 
     try {
-      List<Product> newProduct = await ProductAPI.fetchProducts(context, null, null);
+      List<Product> newProduct = await ProductAPI.fetchProducts(context);
       debugPrint('Fetched ${newProduct.length} stores');
 
       if (newProduct.isNotEmpty) {
@@ -254,14 +254,14 @@ class _StockCardScreenState extends State<StockCardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredStockCard = stockCards.where((card) {
-      return (card.name ?? '').toLowerCase().contains(searchQuery) || 
-             (card.code ?? '').toLowerCase().contains(searchQuery) ||
-             (card.description ?? '').toLowerCase().contains(searchQuery) ||
-             (card.transCode ?? '').toLowerCase().contains(searchQuery) ||
-             (card.productId ?? '').toLowerCase().contains(searchQuery);
-    }).toList();
-
+    final filteredStockCard =
+        stockCards.where((card) {
+          return (card.name ?? '').toLowerCase().contains(searchQuery) ||
+              (card.code ?? '').toLowerCase().contains(searchQuery) ||
+              (card.description ?? '').toLowerCase().contains(searchQuery) ||
+              (card.transCode ?? '').toLowerCase().contains(searchQuery) ||
+              (card.productId ?? '').toLowerCase().contains(searchQuery);
+        }).toList();
 
     return Scaffold(
       body: CustomScrollView(
@@ -292,25 +292,22 @@ class _StockCardScreenState extends State<StockCardScreen> {
 
           if (filteredStockCard.isNotEmpty)
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final stockcard = filteredStockCard[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                    child: StockCardCard(stockCard: stockcard),
-                  );
-                },
-                childCount: filteredStockCard.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final stockcard = filteredStockCard[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 6,
+                  ),
+                  child: StockCardCard(stockCard: stockcard),
+                );
+              }, childCount: filteredStockCard.length),
             )
           else if (!isLoading)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: Text(
-                  'No Data Found',
-                  style: AppTextStyles.labelBlue,
-                ),
+                child: Text('No Data Found', style: AppTextStyles.labelBlue),
               ),
             ),
 
@@ -363,7 +360,10 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 8.0,
+            ),
             child: Icon(CupertinoIcons.search, color: AppColors.pinkPrimary),
           ),
           Expanded(

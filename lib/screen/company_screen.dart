@@ -36,6 +36,7 @@ class _CompanyScreenState extends State<CompanyScreen> {
   @override
   void dispose() {
     super.dispose();
+    search.dispose();
     _scroll.dispose();
   }
 

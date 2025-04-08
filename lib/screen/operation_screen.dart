@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/operation.dart';
 import 'package:operational_app/model/operation.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 
 class OperationScreen extends StatefulWidget {
@@ -46,8 +48,9 @@ class _OperationScreenState extends State<OperationScreen> {
     try {
       List<Operation> newOperations = await OperationAPI.fetchOperations(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
       if (newOperations.isEmpty) {
@@ -87,11 +90,13 @@ class _OperationScreenState extends State<OperationScreen> {
     try {
       List<Operation> latestOperations = await OperationAPI.fetchOperations(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
       if (latestOperations.isNotEmpty) {
+        page++;
         operations.addAll(latestOperations);
       } else {
         hasMore = false;
@@ -130,6 +135,13 @@ class _OperationScreenState extends State<OperationScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshOperations();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,10 +165,14 @@ class _OperationScreenState extends State<OperationScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Column(
-                spacing: 8,
+                spacing: 0,
                 children: [
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ),
                   ...operations.map(
                     (op) => Card(
                       color: Colors.white,
@@ -202,6 +218,29 @@ class _OperationScreenState extends State<OperationScreen> {
               ),
             ),
           ),
+          // No Data Indicator
+          if (operations.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada Operasi ditemukan",
+                        style: AppTextStyles.headingBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(
