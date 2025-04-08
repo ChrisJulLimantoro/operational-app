@@ -4,7 +4,8 @@ import 'package:operational_app/theme/colors.dart';
 
 class SearchBarWidget extends StatefulWidget {
   final TextEditingController controller;
-  const SearchBarWidget({super.key, required this.controller});
+  final Function()? onChanged;
+  const SearchBarWidget({super.key, required this.controller, this.onChanged});
 
   @override
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
@@ -51,16 +52,19 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               controller: _controller,
               onEditingComplete: () {
                 FocusScope.of(context).unfocus();
-                debugPrint(_controller.value.text);
+                if (widget.onChanged != null) {
+                  widget.onChanged!();
+                }
               },
               cursorColor: AppColors.pinkPrimary,
               style: TextStyle(color: AppColors.pinkPrimary),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_alt, color: AppColors.pinkPrimary),
-            onPressed: () {},
-          ),
+          // Filter icon button
+          // IconButton(
+          //   icon: const Icon(Icons.filter_alt, color: AppColors.pinkPrimary),
+          //   onPressed: () {},
+          // ),
         ],
       ),
     );

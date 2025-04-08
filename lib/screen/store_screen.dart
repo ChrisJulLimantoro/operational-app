@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/store.dart';
 import 'package:operational_app/model/store.dart';
+import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -16,10 +18,13 @@ class StoreScreen extends StatefulWidget {
 }
 
 class _StoreScreenState extends State<StoreScreen> {
+  final search = TextEditingController();
   final _scroll = ScrollController();
   List<Store> stores = List.empty(growable: true);
+  int page = 1;
   bool isLoading = false;
   bool isRefresh = false;
+  bool hasMore = true;
 
   @override
   void initState() {
@@ -40,19 +45,34 @@ class _StoreScreenState extends State<StoreScreen> {
     setState(() => isLoading = true);
 
     try {
-      List<Store> newStores = await StoreAPI.fetchStores(context);
+      List<Store> newStores = await StoreAPI.fetchStores(
+        context,
+        page: page,
+        limit: 10,
+        search: search.text,
+      );
 
       debugPrint('Fetched ${newStores.length} companies');
 
-      Set<String> existingIds = stores.map((store) => store.id).toSet();
+      if (newStores.isEmpty) {
+        setState(() => hasMore = false);
+      } else {
+        Set<String> existingIds = stores.map((store) => store.id).toSet();
 
-      List<Store> uniqueStores =
-          newStores
-              .where((company) => !existingIds.contains(company.id))
-              .toList();
+        List<Store> uniqueStores =
+            newStores
+                .where((company) => !existingIds.contains(company.id))
+                .toList();
 
-      if (uniqueStores.isNotEmpty) {
-        stores.addAll(uniqueStores);
+        if (uniqueStores.isNotEmpty) {
+          page++;
+          await Future.delayed(
+            Duration(milliseconds: 400),
+          ); // 🚀 Ensure UI updates
+          stores.addAll(uniqueStores);
+        } else {
+          setState(() => hasMore = false);
+        }
       }
     } catch (e) {
       debugPrint("Error fetching stores: $e");
@@ -67,18 +87,28 @@ class _StoreScreenState extends State<StoreScreen> {
     setState(() {
       isLoading = true;
       stores.clear();
+      page = 1;
+      hasMore = true;
     });
 
     _scroll.removeListener(_onScroll);
 
     try {
-      List<Store> latestStores = await StoreAPI.fetchStores(context);
+      List<Store> latestStores = await StoreAPI.fetchStores(
+        context,
+        page: page,
+        limit: 10,
+        search: search.text,
+      );
 
       if (latestStores.isNotEmpty) {
+        page++;
         stores.addAll(latestStores);
+      } else {
+        setState(() => hasMore = false);
       }
 
-      await Future.delayed(Duration(milliseconds: 200)); // 🚀 Ensure UI updates
+      await Future.delayed(Duration(milliseconds: 400)); // 🚀 Ensure UI updates
       _scroll.jumpTo(1);
     } catch (e) {
       debugPrint("Error fetching newest stores: $e");
@@ -106,10 +136,19 @@ class _StoreScreenState extends State<StoreScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshStores();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
+        controller: _scroll,
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             pinned: true, // Ensures the app bar remains visible when scrolling
@@ -131,8 +170,10 @@ class _StoreScreenState extends State<StoreScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 0,
                 children: [
-                  // SearchBarWidget(controller: search),
-                  // Companies
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ), // Companies
                   ...stores.map(
                     (store) => InkWell(
                       onTap:
@@ -189,6 +230,29 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
           ),
+          // No Data Indicator
+          if (stores.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada cabang ditemukan",
+                        style: AppTextStyles.headingBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(

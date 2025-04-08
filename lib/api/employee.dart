@@ -6,9 +6,18 @@ import 'package:operational_app/model/employee.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class EmployeeAPI {
-  static Future<List<Employee>> fetchEmployees(BuildContext context) async {
+  static Future<List<Employee>> fetchEmployees(
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     try {
-      final response = await ApiHelper.get(context, '/master/employee');
+      final response = await ApiHelper.get(
+        context,
+        '/master/employee',
+        params: {'page': page, 'limit': limit, 'search': search},
+      );
       print(response.data);
       if (!response.data['success']) {
         return [];
@@ -20,7 +29,7 @@ class EmployeeAPI {
         throw Exception("Unexpected response format");
       }
       final result =
-          (response.data['data'] as List)
+          (response.data['data']['data'] as List)
               .map((json) => Employee.fromJSON(json))
               .toList();
       return result;

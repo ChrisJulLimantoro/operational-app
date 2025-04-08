@@ -6,9 +6,18 @@ import 'package:operational_app/model/store.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class StoreAPI {
-  static Future<List<Store>> fetchStores(BuildContext context) async {
+  static Future<List<Store>> fetchStores(
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = "",
+  }) async {
     try {
-      final response = await ApiHelper.get(context, '/master/store');
+      final response = await ApiHelper.get(
+        context,
+        '/master/store',
+        params: {'page': page, 'limit': limit, 'search': search},
+      );
       print(response.data);
       if (!response.data['success']) {
         return [];
@@ -20,7 +29,7 @@ class StoreAPI {
         throw Exception("Unexpected response format");
       }
       final result =
-          (response.data['data'] as List)
+          (response.data['data']['data'] as List)
               .map((json) => Store.fromJSON(json))
               .toList();
       return result;
@@ -31,7 +40,9 @@ class StoreAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchStores(context),
+        onPrimaryPressed:
+            () =>
+                fetchStores(context, page: page, limit: limit, search: search),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -42,7 +53,9 @@ class StoreAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchStores(context),
+        onPrimaryPressed:
+            () =>
+                fetchStores(context, page: page, limit: limit, search: search),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
