@@ -31,11 +31,15 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.transactionProduct.name.split(' - ')[1],
+                    widget.transactionProduct.productCodeId != ''
+                        ? widget.transactionProduct.name.split(' - ')[1]
+                        : 'Outside Product',
                     style: AppTextStyles.labelBlue,
                   ),
                   Text(
-                    widget.transactionProduct.name.split(' - ')[0],
+                    widget.transactionProduct.productCodeId != ''
+                        ? widget.transactionProduct.name.split(' - ')[0]
+                        : '-',
                     style: AppTextStyles.labelBlueItalic,
                   ),
                 ],

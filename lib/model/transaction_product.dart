@@ -33,7 +33,7 @@ class TransactionProduct {
     return TransactionProduct(
       id: json['id'],
       transactionId: json['transaction_id'],
-      productCodeId: json['product_code_id'],
+      productCodeId: json['product_code_id'] ?? '',
       transactionType: json['transaction_type'],
       type: json['type'],
       name: json['name'],

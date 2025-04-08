@@ -11,14 +11,22 @@ class TransactionAPI {
   // Fetching Transaction FROM API
   static Future<List<Transaction>> fetchTransactionsFromAPI(
     BuildContext context,
-    int page,
-    int limit,
-  ) async {
+    int type, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     try {
+      final uri =
+          type == 1
+              ? '/transaction/sales'
+              : type == 2
+              ? '/transaction/purchase'
+              : '/transaction/trade';
       final response = await ApiHelper.get(
         context,
-        '/transaction/sales',
-        params: {'page': page, 'limit': limit},
+        uri,
+        params: {'page': page, 'limit': limit, 'search': search},
       );
       if (!response.data['success']) {
         return [];
@@ -39,7 +47,13 @@ class TransactionAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchTransactionsFromAPI(context, page, limit),
+        onPrimaryPressed:
+            () => fetchTransactionsFromAPI(
+              context,
+              type,
+              page: page,
+              limit: limit,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -50,7 +64,13 @@ class TransactionAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchTransactionsFromAPI(context, page, limit),
+        onPrimaryPressed:
+            () => fetchTransactionsFromAPI(
+              context,
+              type,
+              page: page,
+              limit: limit,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

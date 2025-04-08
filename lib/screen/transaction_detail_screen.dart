@@ -238,6 +238,14 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                             type: "currency",
                             textStyle: AppTextStyles.labelPink,
                           ),
+                          widget.transaction.transactionType == 3
+                              ? TextCardDetail(
+                                label: "Biaya Tukar Tambah",
+                                value: widget.transaction.adjustmentPrice,
+                                type: "currency",
+                                textStyle: AppTextStyles.labelPink,
+                              )
+                              : const SizedBox(),
                           Divider(),
                           TextCardDetail(
                             label: "Total",
