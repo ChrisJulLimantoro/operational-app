@@ -134,4 +134,42 @@ class TransactionAPI {
       return false;
     }
   }
+
+  static Future<Map<String, dynamic>> fetchConfig(BuildContext context) async {
+    final authCubit = context.read<AuthCubit>();
+    final storeId = authCubit.state.storeId;
+    try {
+      final response = await ApiHelper.get(context, '/master/store/$storeId');
+      if (!response.data['success']) {
+        return {};
+      }
+      if (!context.mounted) {
+        return {};
+      }
+      return response.data['data'];
+    } on DioException catch (e) {
+      debugPrint('Error submitting transaction: $e');
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengirim data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchConfig(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchConfig(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+    }
+    return {};
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/category.dart';
 import 'package:operational_app/api/customer.dart';
 import 'package:operational_app/api/operation.dart';
 import 'package:operational_app/api/product.dart';
@@ -15,7 +16,7 @@ import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/email_form.dart';
 import 'package:operational_app/widget/form_sheet.dart';
-import 'package:operational_app/widget/operation_selection_form.dart';
+import 'package:operational_app/widget/selection_form.dart';
 import 'package:operational_app/widget/text_form.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:operational_app/widget/transaction_operation_section.dart';
@@ -81,11 +82,18 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     'status': 1,
     'sub_total_price': 0.0,
     'tax_price': 0.0,
+    'adjustment_price': 0.0,
     'total_price': 0.0,
     'paid_amount': 0.0,
     'transaction_type': 1,
   };
-
+  Map<String, dynamic> config = {
+    'tax_percent': null,
+    'fixed_tt_adjustment': null,
+    'percent_tt_adjustment': null,
+    'fixed_kbl_adjustment': null,
+    'percent_kbl_adjustment': null,
+  };
   // Open QR Scanner
   Future<void> _qrScan(String type) async {
     final scanned = await Navigator.push(
@@ -99,7 +107,44 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     } else if (type == 'product_sold') {
       await _fetchProductSold(scanned.split(';')[0]);
     } else if (type == 'product_bought') {
-      await _fetchProductBought(scanned.split(';')[0]);
+      final data = {'barcode': scanned.split(';')[0]};
+      // Ask if its broken or not
+      final result = await showModalBottomSheet<Map<String, dynamic>>(
+        context: context,
+        isDismissible: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        builder: (context) {
+          return StatefulBuilder(
+            builder:
+                (context, setModalState) => FormSheet(
+                  title: 'Cari Produk Pembelian',
+                  form: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Kondisi rusak ? ",
+                        style: AppTextStyles.labelBlue,
+                      ),
+                      Checkbox(
+                        value: isOpen,
+                        onChanged: (value) {
+                          setModalState(() {
+                            isOpen = value!;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  onOkPressed: () {
+                    Navigator.pop(context, isOpen);
+                  },
+                  primaryColor: AppColors.success,
+                ),
+          );
+        },
+      );
+      data['isBroken'] = result;
+      await _fetchProductBought(data);
     } else if (type == 'operation') {
       await _fetchOperation(scanned.split(';')[1]);
     }
@@ -171,6 +216,174 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   }
 
   // Open Prompt to Insert Product Barcode
+  Future<void> _showPromptBought() async {
+    String scannedBarcode = '';
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Cari Produk Pembelian',
+                form: Column(
+                  children: [
+                    TextForm(
+                      onChanged: (value) {
+                        scannedBarcode = value;
+                      },
+                      label: 'Enter Barcode',
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Kondisi rusak ? ",
+                          style: AppTextStyles.labelBlue,
+                        ),
+                        Checkbox(
+                          value: isOpen,
+                          onChanged: (value) {
+                            setModalState(() {
+                              isOpen = value!;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  Navigator.pop(context, {
+                    'barcode': scannedBarcode,
+                    'isBroken': isOpen,
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+    if (result != null) {
+      await _fetchProductBought(result);
+    }
+  }
+
+  // Open Prompt to Insert Product Type, Weight and isBroken
+  Future<void> _showPromptOutside() async {
+    Map<String, dynamic> result = {};
+
+    final cats = await CategoryAPI.fetchCategories(context);
+    List<Map<String, dynamic>> categories =
+        cats
+            .map(
+              (item) => {'id': item.id, 'value': '${item.code} - ${item.name}'},
+            )
+            .toList();
+
+    String? selectedCategory;
+    List<Map<String, dynamic>> filteredSubcategories = [];
+
+    final res = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Produk Pembelian dari Luar Toko',
+                form: Column(
+                  children: [
+                    // Category Dropdown
+                    SelectionForm(
+                      label: 'Category',
+                      options: categories,
+                      onChanged: (value) {
+                        selectedCategory = value;
+                        result['category_id'] = value;
+                        setModalState(() {
+                          final data =
+                              cats.firstWhere((cat) => cat.id == value).types;
+                          if (data!.isNotEmpty) {
+                            filteredSubcategories =
+                                data
+                                    .map(
+                                      (item) => {
+                                        'id': item.id,
+                                        'value': '${item.code} - ${item.name}',
+                                      },
+                                    )
+                                    .toList();
+                          } else {
+                            filteredSubcategories = [];
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Subcategory Dropdown
+                    SelectionForm(
+                      label: 'Subcategory',
+                      options: filteredSubcategories,
+                      onChanged: (value) {
+                        result['type_id'] = value;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Weight
+                    TextForm(
+                      onChanged: (value) {
+                        result['weight'] = value;
+                      },
+                      label: 'Enter Weight',
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Checkbox
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Kondisi rusak ? ",
+                          style: AppTextStyles.labelBlue,
+                        ),
+                        Checkbox(
+                          value: isOpen,
+                          onChanged: (value) {
+                            setModalState(() {
+                              isOpen = value!;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  Navigator.pop(context, {
+                    'category_id': result['category_id'],
+                    'type_id': result['type_id'],
+                    'weight': result['weight'],
+                    'isBroken': isOpen,
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+
+    // result from modal
+    if (res != null && res['type_id'] != null && res['weight'] != null) {
+      await _fetchProductOutside(res);
+    }
+  }
+
+  // Open Prompt to Insert Product Barcode
   Future<void> _showPromptOperation() async {
     String selectedOperation = '';
     List<Operation> ops = await OperationAPI.fetchOperations(context);
@@ -181,7 +394,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       builder:
           (context) => FormSheet(
             title: 'Select Operation',
-            form: OperationSelectionForm(
+            form: SelectionForm(
               options:
                   ops
                       .map((item) => {'id': item.id, 'value': item.name})
@@ -189,6 +402,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
               onChanged: (value) {
                 selectedOperation = value;
               },
+              label: 'Select Operation',
             ),
             onOkPressed: () {
               Navigator.pop(
@@ -202,6 +416,25 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (selected != null) {
       await _fetchOperation(selectedOperation);
     }
+  }
+
+  // Fetch Tax and config
+  Future<void> _fetchConfig() async {
+    // Fetch Config
+    final res = await TransactionAPI.fetchConfig(context);
+    setState(() {
+      form['tax_percent'] =
+          form['tax_percent'] ?? double.parse(res['tax_percentage']);
+      config['tax_percent'] = double.parse(res['tax_percentage']);
+      config['fixed_tt_adjustment'] =
+          double.tryParse(res['fixed_tt_adjustment']) ?? 0.0;
+      config['percent_tt_adjustment'] =
+          double.tryParse(res['percent_tt_adjustment']) ?? 0.0;
+      config['fixed_kbl_adjustment'] =
+          double.tryParse(res['fixed_kbl_adjustment']) ?? 0.0;
+      config['percent_kbl_adjustment'] =
+          double.tryParse(res['percent_kbl_adjustment']) ?? 0.0;
+    });
   }
 
   // Fetch Customer by ID
@@ -266,16 +499,12 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       );
       setState(() {
         itemSold.add(tp);
-        form['sub_total_price'] = form['sub_total_price'] + tp.totalPrice;
-        form['tax_price'] = form['sub_total_price'] * 0.1;
-        form['total_price'] = form['sub_total_price'] + form['tax_price'];
-        form['paid_amount'] =
-            form['total_price']; //assume paid amount is total price
+        _calculate();
       });
       NotificationHelper.showNotificationSheet(
         context: context,
         title: "Berhasil",
-        message: "Customer ditemukan",
+        message: "Produk Berhasil didaftarkan",
         icon: Icons.check_circle_outline,
         primaryColor: AppColors.success,
         primaryButtonText: "OK",
@@ -285,7 +514,87 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   }
 
   // Fetch Product by barcode
-  Future<void> _fetchProductBought(String barcode) async {}
+  Future<void> _fetchProductBought(Map<String, dynamic> result) async {
+    // Fetch Product sold by ID
+    final prod = await ProductAPI.fetchProductPurchase(
+      context,
+      result['barcode'],
+      result['isBroken'],
+    );
+    if (prod != null) {
+      TransactionProduct tp = TransactionProduct(
+        id: '',
+        transactionId: '',
+        productCodeId: prod['id'],
+        transactionType: 2,
+        name: prod['name'],
+        price: double.parse(prod['price'].toString()),
+        weight: double.parse(prod['weight'].toString()),
+        type: prod['type'],
+        adjustmentPrice: double.parse(prod['adjustment_price'].toString()),
+        totalPrice:
+            (double.parse(prod['price'].toString()) *
+                    double.parse(prod['weight'].toString()) +
+                double.parse(prod['adjustment_price'].toString())) *
+            -1,
+        status: 1,
+        discount: 0.0,
+        isBroken: prod['is_broken'],
+      );
+      setState(() {
+        itemBought.add(tp);
+        _calculate();
+      });
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Berhasil",
+        message: "Produk berhasil didaftarkan",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+    }
+  }
+
+  // Fetch Product Outside of the Store
+  Future<void> _fetchProductOutside(Map<String, dynamic> result) async {
+    final prod = await ProductAPI.fetchProductOutside(context, result);
+    if (prod != null) {
+      TransactionProduct tp = TransactionProduct(
+        id: '',
+        transactionId: '',
+        productCodeId: prod['id'] ?? '',
+        transactionType: 2,
+        name: prod['name'],
+        price: double.parse(prod['price'].toString()),
+        weight: double.parse(prod['weight'].toString()),
+        type: prod['type'],
+        adjustmentPrice: double.parse(prod['adjustment_price'].toString()),
+        totalPrice:
+            (double.parse(prod['price'].toString()) *
+                    double.parse(prod['weight'].toString()) +
+                double.parse(prod['adjustment_price'].toString())) *
+            -1,
+        status: 1,
+        discount: 0.0,
+        isBroken: prod['is_broken'],
+      );
+      setState(() {
+        itemBought.add(tp);
+        _calculate();
+      });
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Berhasil",
+        message: "Produk dari luar toko berhasil didaftarkan",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+    }
+  }
 
   // Fetch Operation by ID
   Future<void> _fetchOperation(String id) async {
@@ -306,21 +615,59 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       );
       setState(() {
         operations.add(to);
-        form['sub_total_price'] = form['sub_total_price'] + to.totalPrice;
-        form['tax_price'] = form['sub_total_price'] * 0.1;
-        form['total_price'] = form['sub_total_price'] + form['tax_price'];
-        form['paid_amount'] = form['total_price'];
+        _calculate();
       });
       NotificationHelper.showNotificationSheet(
         context: context,
         title: "Berhasil",
-        message: "Customer ditemukan",
+        message: "Operasi berhasil didaftarkan",
         icon: Icons.check_circle_outline,
         primaryColor: AppColors.success,
         primaryButtonText: "OK",
         onPrimaryPressed: () {},
       );
     }
+  }
+
+  void _calculate() {
+    double bought = 0;
+    double sold = 0;
+    double tax = 0;
+
+    for (final item in itemSold) {
+      sold += item.totalPrice;
+      tax += item.totalPrice * (config['tax_percent'] / 100);
+    }
+    for (final item in itemBought) {
+      bought += item.totalPrice;
+    }
+    for (final item in operations) {
+      sold += item.totalPrice;
+      tax += item.totalPrice * (config['tax_percent'] / 100);
+    }
+
+    double adj = 0;
+    double subtotal = sold + bought;
+    if (widget.type == 3) {
+      if (subtotal + tax >= 0) {
+        adj =
+            config['fixed_tt_adjustment'] ??
+            (config['percent_tt_adjustment'] / 100) * subtotal;
+      } else {
+        adj =
+            config['fixed_kbl_adjustment'] ??
+            (config['percent_kbl_adjustment'] / 100) * subtotal;
+      }
+    }
+
+    setState(() {
+      form['sub_total_price'] = subtotal;
+      form['tax_price'] = tax;
+      form['adjustment_price'] = adj;
+      form['total_price'] =
+          subtotal + tax + adj; // Total Price = Subtotal + Tax + Adjustment
+      form['paid_amount'] = form['total_price'];
+    });
   }
 
   Future<void> _submit() async {
@@ -353,6 +700,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     super.initState();
     // Init Date
     dateController.text = "${form['date'].toLocal()}".split(' ')[0];
+    form['transaction_type'] = widget.type;
+    _fetchConfig();
 
     // Initialize items Details
     // itemSold =
@@ -414,32 +763,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                 labelText: "Tanggal Transaksi",
                               ),
                               onTap: () => _selectDate(context),
-                            ),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButtonFormField(
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.shop),
-                                labelText: "Jenis Transaksi",
-                              ),
-                              value: form['transaction_type'],
-                              onChanged: (value) {
-                                setState(() {
-                                  form['transaction_type'] = value;
-                                });
-                              },
-                              items:
-                                  transactionType
-                                      .map(
-                                        (item) => DropdownMenuItem(
-                                          value: item['id'],
-                                          child: Text(item['value']),
-                                        ),
-                                      )
-                                      .toList(),
                             ),
                           ),
                           Container(
@@ -697,7 +1020,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                   vertical: 16.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.bluePrimary,
+                                  color: AppColors.pinkPrimary,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Column(
@@ -715,10 +1038,20 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  if (widget.type == 2 || widget.type == 3)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                      child: Row(
+                        spacing: 12,
+                        children: [
                           Expanded(
                             child: InkWell(
                               onTap: () {
-                                // Search by notificationSheet penjualan Produk
+                                // Scan QR pembelian Produk
+                                _showPromptOutside();
                               },
                               child: Container(
                                 alignment: Alignment.center,
@@ -733,7 +1066,37 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                   children: [
                                     Icon(Icons.search, color: Colors.white),
                                     Text(
-                                      "Pencarian\nPenjualan produk",
+                                      "Pembelian produk\nDari luar toko",
+                                      style: AppTextStyles.labelWhite,
+                                      softWrap: true,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                // Search by notificationSheet penjualan Produk
+                                _showPromptBought();
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bluePrimary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.search, color: Colors.white),
+                                    Text(
+                                      "Pembelian produk\nMilik Toko",
                                       style: AppTextStyles.labelWhite,
                                       softWrap: true,
                                       textAlign: TextAlign.center,
@@ -747,83 +1110,86 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         ],
                       ),
                     ),
-                  TransactionOperationSection(
-                    title: "Detail Jasa",
-                    operations: operations,
-                    totalPrice: operations.fold(
-                      0.0,
-                      (previousValue, element) =>
-                          previousValue + element.totalPrice,
+
+                  if (widget.type == 1 || widget.type == 3)
+                    TransactionOperationSection(
+                      title: "Detail Jasa",
+                      operations: operations,
+                      totalPrice: operations.fold(
+                        0.0,
+                        (previousValue, element) =>
+                            previousValue + element.totalPrice,
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                    child: Row(
-                      spacing: 12,
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              // Scan QR Jasa
-                              _qrScan('operation');
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.pinkPrimary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.qr_code, color: Colors.white),
-                                  Text(
-                                    "Scan QR Jasa",
-                                    style: AppTextStyles.labelWhite,
-                                    softWrap: true,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                  ),
-                                ],
+                  if (widget.type == 1 || widget.type == 3)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                      child: Row(
+                        spacing: 12,
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                // Scan QR Jasa
+                                _qrScan('operation');
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.pinkPrimary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.qr_code, color: Colors.white),
+                                    Text(
+                                      "Scan QR Jasa",
+                                      style: AppTextStyles.labelWhite,
+                                      softWrap: true,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              // Search by notificationSheet pencarian JASA
-                              _showPromptOperation();
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.bluePrimary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.search, color: Colors.white),
-                                  Text(
-                                    "Pencarian Jasa",
-                                    style: AppTextStyles.labelWhite,
-                                    softWrap: true,
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                  ),
-                                ],
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                // Search by notificationSheet pencarian JASA
+                                _showPromptOperation();
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bluePrimary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.search, color: Colors.white),
+                                    Text(
+                                      "Pencarian Jasa",
+                                      style: AppTextStyles.labelWhite,
+                                      softWrap: true,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
                   Card(
                     color: Colors.white,
@@ -842,12 +1208,20 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             type: "currency",
                             textStyle: AppTextStyles.labelPink,
                           ),
-                          TextCardDetail(
-                            label: "Pajak",
-                            value: form['tax_price'],
-                            type: "currency",
-                            textStyle: AppTextStyles.labelPink,
-                          ),
+                          if (form['transaction_type'] != 2)
+                            TextCardDetail(
+                              label: "Pajak",
+                              value: form['tax_price'],
+                              type: "currency",
+                              textStyle: AppTextStyles.labelPink,
+                            ),
+                          if (form['transaction_type'] == 3)
+                            TextCardDetail(
+                              label: "Biaya Tukar Tambah",
+                              value: form['adjustment_price'],
+                              type: "currency",
+                              textStyle: AppTextStyles.labelPink,
+                            ),
                           Divider(),
                           TextCardDetail(
                             label: "Total",

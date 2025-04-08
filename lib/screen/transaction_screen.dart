@@ -272,7 +272,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.push('/transaction/add');
+          context.push('/transaction/add', extra: widget.type);
         },
         backgroundColor: AppColors.pinkPrimary,
         child: const Icon(CupertinoIcons.add, color: Colors.white),

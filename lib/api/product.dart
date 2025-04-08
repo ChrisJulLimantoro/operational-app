@@ -96,4 +96,87 @@ class ProductAPI {
       return null;
     }
   }
+
+  static Future<Map<String, dynamic>?> fetchProductPurchase(
+    BuildContext context,
+    String barcode,
+    bool isBroken,
+  ) async {
+    try {
+      final response = await ApiHelper.get(
+        context,
+        '/transaction/product-purchase/$barcode',
+        params: {
+          'store': context.read<AuthCubit>().state.storeId,
+          'is_broken': isBroken,
+        },
+      );
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      debugPrint(response.data['data'].toString());
+      return response.data['data'];
+    } on DioException catch (e) {
+      if (!context.mounted) return null;
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchProductCode(context, barcode),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> fetchProductOutside(
+    BuildContext context,
+    Map<String, dynamic> result,
+  ) async {
+    try {
+      final response = await ApiHelper.get(
+        context,
+        '/transaction/purchase-non-product',
+        params: {
+          'store': context.read<AuthCubit>().state.storeId,
+          'weight': result['weight'],
+          'is_broken': result['is_broken'],
+          'type_id': result['type_id'],
+        },
+      );
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      debugPrint(response.data['data'].toString());
+      return response.data['data'];
+    } on DioException catch (e) {
+      if (!context.mounted) return null;
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchProductOutside(context, result),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    }
+  }
 }

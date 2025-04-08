@@ -137,7 +137,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/transaction/add',
       builder: (context, state) {
-        return const TransactionAddScreen();
+        final type = state.extra as int;
+        return TransactionAddScreen(type: type);
       },
     ),
     GoRoute(

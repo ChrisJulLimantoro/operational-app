@@ -12,6 +12,7 @@ class TransactionProduct {
   final double totalPrice;
   final int status;
   final String comment;
+  final bool isBroken;
 
   TransactionProduct({
     required this.id,
@@ -27,6 +28,7 @@ class TransactionProduct {
     required this.totalPrice,
     required this.status,
     this.comment = '',
+    this.isBroken = false,
   });
 
   factory TransactionProduct.fromJSON(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class TransactionProduct {
       totalPrice: double.tryParse(json['total_price']) ?? 0.0,
       status: json['status'],
       comment: json['comment'] ?? '-',
+      isBroken: json['is_broken'] ?? false,
     );
   }
   static Map<String, dynamic> toJSON(TransactionProduct tp) {
@@ -63,6 +66,7 @@ class TransactionProduct {
       'status': tp.status,
       'comment': tp.comment,
       'detail_type': 'product',
+      'is_broken': tp.isBroken,
     };
   }
 }
