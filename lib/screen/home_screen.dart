@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             "icon": Icons.shopping_bag,
             "route": "/pembelian",
           },
-          {"title": "Retur", "icon": Icons.undo, "route": "/retur"},
+          {"title": "Trade", "icon": Icons.undo, "route": "/retur"},
         ],
       },
     ],
