@@ -482,6 +482,32 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     // Fetch Product sold by ID
     final prod = await ProductAPI.fetchProductCode(context, barcode);
     if (prod != null) {
+      if (prod['status'] == 0 || prod['status'] == 1) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Produk telah terjual",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        return;
+      }
+      if (itemSold
+          .where((element) => element.productCodeId == prod['id'])
+          .isNotEmpty) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Produk sudah terdaftar",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        return;
+      }
       TransactionProduct tp = TransactionProduct(
         id: '',
         transactionId: '',
@@ -522,6 +548,32 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       result['isBroken'],
     );
     if (prod != null) {
+      if (prod['status'] != 1) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Produk tidak tersedia",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        return;
+      }
+      if (itemSold
+          .where((element) => element.productCodeId == prod['id'])
+          .isNotEmpty) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Produk sudah terdaftar",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        return;
+      }
       TransactionProduct tp = TransactionProduct(
         id: '',
         transactionId: '',
@@ -627,6 +679,27 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         onPrimaryPressed: () {},
       );
     }
+  }
+
+  void cancelProductSold(int index) {
+    setState(() {
+      itemSold.removeAt(index);
+      _calculate();
+    });
+  }
+
+  void cancelProductBought(int index) {
+    setState(() {
+      itemBought.removeAt(index);
+      _calculate();
+    });
+  }
+
+  void cancelOperation(int index) {
+    setState(() {
+      operations.removeAt(index);
+      _calculate();
+    });
   }
 
   void _calculate() {
@@ -917,6 +990,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         (previousValue, element) =>
                             previousValue + element.totalPrice,
                       ),
+                      onRemove: (index) => cancelProductSold(index),
+                      readonly: false,
                     ),
                   if (widget.type == 1 || widget.type == 3)
                     Padding(
@@ -1001,6 +1076,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         (previousValue, element) =>
                             previousValue + element.totalPrice,
                       ),
+                      onRemove: (index) => cancelProductBought(index),
+                      readonly: false,
                     ),
                   if (widget.type == 2 || widget.type == 3)
                     Padding(
@@ -1120,6 +1197,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         (previousValue, element) =>
                             previousValue + element.totalPrice,
                       ),
+                      onRemove: (index) => cancelOperation(index),
+                      readonly: false,
                     ),
                   if (widget.type == 1 || widget.type == 3)
                     Padding(

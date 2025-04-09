@@ -53,7 +53,7 @@ class TransactionProduct {
     return {
       'id': tp.id,
       'transaction_id': tp.transactionId,
-      'product_code_id': tp.productCodeId,
+      'product_code_id': tp.productCodeId != '' ? tp.productCodeId : null,
       'transaction_type': tp.transactionType,
       'name': tp.name,
       'type': tp.type,

@@ -88,6 +88,20 @@ class TransactionAPI {
       form['store_id'] = authCubit.state.storeId;
       form['date'] = form['date'].toString();
 
+      // Check validation for detail
+      if (form['transaction_products'] == null &&
+          form['transaction_operations'] == null) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Silahkan pilih produk atau jasa",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+
       final response = await ApiHelper.post(
         context,
         '/transaction/transaction',
