@@ -47,7 +47,7 @@ dependencies:
   open_filex: ^4.7.0
   permission_handler: ^11.4.0
   flutter_pdfview: ^1.4.0
-  device_info_plus: ^10.1.0  # You can use latest version
+  device_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:
