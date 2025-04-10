@@ -9,6 +9,8 @@ class TransactionProductSection extends StatelessWidget {
   final List<TransactionProduct> products;
   final double totalWeight;
   final double totalPrice;
+  final Function(int index)? onRemove;
+  final bool? readonly;
 
   const TransactionProductSection({
     super.key,
@@ -16,6 +18,8 @@ class TransactionProductSection extends StatelessWidget {
     required this.products,
     required this.totalWeight,
     required this.totalPrice,
+    this.onRemove,
+    this.readonly = true,
   });
 
   @override
@@ -36,7 +40,12 @@ class TransactionProductSection extends StatelessWidget {
                 child: Text("Belum ada produk", style: AppTextStyles.labelPink),
               ),
             ...products.map(
-              (product) => TransactionDetailCard(transactionProduct: product),
+              (product) => TransactionDetailCard(
+                transactionProduct: product,
+                onRemove: onRemove,
+                index: products.indexOf(product),
+                readonly: readonly ?? true,
+              ),
             ),
             Divider(),
             TextCardDetail(

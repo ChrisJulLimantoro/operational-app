@@ -8,8 +8,17 @@ import 'package:operational_app/helper/format_currency.dart';
 
 class TransactionDetailCard extends StatefulWidget {
   final TransactionProduct transactionProduct;
+  final Function(int index)? onRemove;
+  final int? index;
+  final bool readonly;
 
-  const TransactionDetailCard({super.key, required this.transactionProduct});
+  const TransactionDetailCard({
+    super.key,
+    required this.transactionProduct,
+    this.onRemove,
+    this.index,
+    this.readonly = true,
+  });
 
   @override
   State<TransactionDetailCard> createState() => _TransactionDetailCardState();
@@ -31,11 +40,15 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.transactionProduct.name.split(' - ')[1],
+                    widget.transactionProduct.productCodeId != ''
+                        ? widget.transactionProduct.name.split(' - ')[1]
+                        : 'Outside Product',
                     style: AppTextStyles.labelBlue,
                   ),
                   Text(
-                    widget.transactionProduct.name.split(' - ')[0],
+                    widget.transactionProduct.productCodeId != ''
+                        ? widget.transactionProduct.name.split(' - ')[0]
+                        : '-',
                     style: AppTextStyles.labelBlueItalic,
                   ),
                 ],
@@ -101,12 +114,52 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                     type: "currency",
                   ),
                   const Divider(),
+                  if (widget.transactionProduct.isBroken)
+                    TextCardDetail(
+                      label: "Kondisi",
+                      value: "Rusak",
+                      type: "string",
+                    ),
                   TextCardDetail(
                     label: "Keterangan",
                     value: widget.transactionProduct.comment,
                     type: "string",
                     isLong: true,
                   ),
+                  if (!widget.readonly) const Divider(),
+                  if (!widget.readonly)
+                    InkWell(
+                      onTap: () {
+                        // Scan QR pembelian Produk
+                        widget.onRemove?.call(widget.index ?? -1);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 4,
+                          children: [
+                            Icon(
+                              CupertinoIcons.trash,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              "Hapus",
+                              style: AppTextStyles.labelWhite,
+                              softWrap: true,
+                              maxLines: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

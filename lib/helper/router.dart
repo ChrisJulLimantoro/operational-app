@@ -116,8 +116,16 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const StockOutAddScreen(),
     ),
     GoRoute(
-      path: '/transaction',
-      builder: (context, state) => const TransactionScreen(),
+      path: '/sales',
+      builder: (context, state) => const TransactionScreen(type: 1),
+    ),
+    GoRoute(
+      path: '/purchase',
+      builder: (context, state) => const TransactionScreen(type: 2),
+    ),
+    GoRoute(
+      path: '/trade',
+      builder: (context, state) => const TransactionScreen(type: 3),
     ),
     GoRoute(
       path: '/transaction-detail',
@@ -129,7 +137,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/transaction/add',
       builder: (context, state) {
-        return const TransactionAddScreen();
+        final type = state.extra as int;
+        return TransactionAddScreen(type: type);
       },
     ),
     GoRoute(

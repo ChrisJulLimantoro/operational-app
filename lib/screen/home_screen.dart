@@ -54,13 +54,13 @@ class _HomeScreenState extends State<HomeScreen> {
       {
         "group": "Menu Transaksi",
         "items": [
-          {"title": "Penjualan", "icon": Icons.sell, "route": "/transaction"},
+          {"title": "Penjualan", "icon": Icons.sell, "route": "/sales"},
           {
             "title": "Pembelian",
             "icon": Icons.shopping_bag,
-            "route": "/pembelian",
+            "route": "/purchase",
           },
-          {"title": "Trade", "icon": Icons.undo, "route": "/retur"},
+          {"title": "Trade", "icon": Icons.undo, "route": "/trade"},
         ],
       },
     ],

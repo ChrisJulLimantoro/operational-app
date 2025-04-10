@@ -12,6 +12,7 @@ class TransactionProduct {
   final double totalPrice;
   final int status;
   final String comment;
+  final bool isBroken;
 
   TransactionProduct({
     required this.id,
@@ -27,13 +28,14 @@ class TransactionProduct {
     required this.totalPrice,
     required this.status,
     this.comment = '',
+    this.isBroken = false,
   });
 
   factory TransactionProduct.fromJSON(Map<String, dynamic> json) {
     return TransactionProduct(
       id: json['id'],
       transactionId: json['transaction_id'],
-      productCodeId: json['product_code_id'],
+      productCodeId: json['product_code_id'] ?? '',
       transactionType: json['transaction_type'],
       type: json['type'],
       name: json['name'],
@@ -44,13 +46,14 @@ class TransactionProduct {
       totalPrice: double.tryParse(json['total_price']) ?? 0.0,
       status: json['status'],
       comment: json['comment'] ?? '-',
+      isBroken: json['is_broken'] ?? false,
     );
   }
   static Map<String, dynamic> toJSON(TransactionProduct tp) {
     return {
       'id': tp.id,
       'transaction_id': tp.transactionId,
-      'product_code_id': tp.productCodeId,
+      'product_code_id': tp.productCodeId != '' ? tp.productCodeId : null,
       'transaction_type': tp.transactionType,
       'name': tp.name,
       'type': tp.type,
@@ -63,6 +66,7 @@ class TransactionProduct {
       'status': tp.status,
       'comment': tp.comment,
       'detail_type': 'product',
+      'is_broken': tp.isBroken,
     };
   }
 }

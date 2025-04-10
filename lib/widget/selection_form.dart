@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 
-class OperationSelectionForm extends StatefulWidget {
+class SelectionForm extends StatefulWidget {
   final ValueChanged<String> onChanged; // Callback function
   final List<Map<String, dynamic>> options; // List of selectable options
+  final String label; // Label for the dropdown
 
-  const OperationSelectionForm({
+  const SelectionForm({
     super.key,
     required this.onChanged,
     required this.options,
+    required this.label,
   });
 
   @override
-  OperationSelectionFormState createState() => OperationSelectionFormState();
+  SelectionFormState createState() => SelectionFormState();
 }
 
-class OperationSelectionFormState extends State<OperationSelectionForm> {
+class SelectionFormState extends State<SelectionForm> {
   String? selectedOption;
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       value: selectedOption,
-      decoration: const InputDecoration(
-        labelText: 'Select Operation',
+      decoration: InputDecoration(
+        labelText: widget.label,
         border: OutlineInputBorder(),
       ),
       items:

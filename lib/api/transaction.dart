@@ -11,14 +11,22 @@ class TransactionAPI {
   // Fetching Transaction FROM API
   static Future<List<Transaction>> fetchTransactionsFromAPI(
     BuildContext context,
-    int page,
-    int limit,
-  ) async {
+    int type, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     try {
+      final uri =
+          type == 1
+              ? '/transaction/sales'
+              : type == 2
+              ? '/transaction/purchase'
+              : '/transaction/trade';
       final response = await ApiHelper.get(
         context,
-        '/transaction/sales',
-        params: {'page': page, 'limit': limit},
+        uri,
+        params: {'page': page, 'limit': limit, 'search': search},
       );
       if (!response.data['success']) {
         return [];
@@ -39,7 +47,13 @@ class TransactionAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchTransactionsFromAPI(context, page, limit),
+        onPrimaryPressed:
+            () => fetchTransactionsFromAPI(
+              context,
+              type,
+              page: page,
+              limit: limit,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -50,7 +64,13 @@ class TransactionAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchTransactionsFromAPI(context, page, limit),
+        onPrimaryPressed:
+            () => fetchTransactionsFromAPI(
+              context,
+              type,
+              page: page,
+              limit: limit,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -67,6 +87,20 @@ class TransactionAPI {
       form['employee_id'] = authCubit.state.userId;
       form['store_id'] = authCubit.state.storeId;
       form['date'] = form['date'].toString();
+
+      // Check validation for detail
+      if (form['transaction_products'] == null &&
+          form['transaction_operations'] == null) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Silahkan pilih produk atau jasa",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
 
       final response = await ApiHelper.post(
         context,
@@ -113,5 +147,43 @@ class TransactionAPI {
       );
       return false;
     }
+  }
+
+  static Future<Map<String, dynamic>> fetchConfig(BuildContext context) async {
+    final authCubit = context.read<AuthCubit>();
+    final storeId = authCubit.state.storeId;
+    try {
+      final response = await ApiHelper.get(context, '/master/store/$storeId');
+      if (!response.data['success']) {
+        return {};
+      }
+      if (!context.mounted) {
+        return {};
+      }
+      return response.data['data'];
+    } on DioException catch (e) {
+      debugPrint('Error submitting transaction: $e');
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengirim data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchConfig(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchConfig(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+    }
+    return {};
   }
 }

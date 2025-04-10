@@ -14,6 +14,8 @@ class Transaction {
   final int status;
   final double subTotalPrice;
   final double taxPrice;
+  final double taxPercent;
+  final double adjustmentPrice;
   final double totalPrice;
   final String comment;
   final int approve;
@@ -35,6 +37,8 @@ class Transaction {
     required this.status,
     required this.subTotalPrice,
     required this.taxPrice,
+    required this.taxPercent,
+    required this.adjustmentPrice,
     required this.totalPrice,
     required this.comment,
     required this.storeId,
@@ -57,7 +61,9 @@ class Transaction {
       poinEarned: json['poin_earned'] ?? 0,
       status: json['status'],
       subTotalPrice: double.tryParse(json['sub_total_price']) ?? 0.0,
+      adjustmentPrice: double.tryParse(json['adjustment_price']) ?? 0.0,
       taxPrice: double.tryParse(json['tax_price']) ?? 0.0,
+      taxPercent: double.tryParse(json['tax_percent']) ?? 0.0,
       totalPrice: double.tryParse(json['total_price']) ?? 0.0,
       comment: json['comment'] ?? '-',
       approve: json['approve'],

@@ -8,15 +8,16 @@ import 'package:operational_app/theme/colors.dart';
 class StockOutAPI {
   // Fetching StockOut FROM API
   static Future<List<StockOut>> fetchStockOuts(
-    BuildContext context,
-    int page,
-    int limit,
-  ) async {
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     try {
       final response = await ApiHelper.get(
         context,
         '/inventory/stock-out',
-        params: {'page': page, 'limit': limit},
+        params: {'page': page, 'limit': limit, 'search': search},
       );
       if (!response.data['success']) {
         return [];
@@ -37,7 +38,13 @@ class StockOutAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchStockOuts(context, page, limit),
+        onPrimaryPressed:
+            () => fetchStockOuts(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -48,7 +55,13 @@ class StockOutAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchStockOuts(context, page, limit),
+        onPrimaryPressed:
+            () => fetchStockOuts(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

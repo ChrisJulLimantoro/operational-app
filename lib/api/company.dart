@@ -6,10 +6,18 @@ import 'package:operational_app/model/company.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class CompanyAPI {
-  static Future<List<Company>> fetchCompanies(BuildContext context) async {
+  static Future<List<Company>> fetchCompanies(
+    BuildContext context, {
+    int page = 0,
+    int limit = 0,
+    String search = '',
+  }) async {
     try {
-      final response = await ApiHelper.get(context, '/master/company');
-      print(response.data);
+      final response = await ApiHelper.get(
+        context,
+        '/master/company',
+        params: {'page': page, 'limit': limit, 'search': search},
+      );
       if (!response.data['success']) {
         return [];
       }
@@ -20,7 +28,7 @@ class CompanyAPI {
         throw Exception("Unexpected response format");
       }
       final result =
-          (response.data['data'] as List)
+          (response.data['data']['data'] as List)
               .map((json) => Company.fromJSON(json))
               .toList();
       return result;
@@ -31,7 +39,13 @@ class CompanyAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchCompanies(context),
+        onPrimaryPressed:
+            () => fetchCompanies(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -42,7 +56,13 @@ class CompanyAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchCompanies(context),
+        onPrimaryPressed:
+            () => fetchCompanies(
+              context,
+              page: page,
+              limit: limit,
+              search: search,
+            ),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

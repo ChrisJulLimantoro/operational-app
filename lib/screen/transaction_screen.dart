@@ -14,7 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class TransactionScreen extends StatefulWidget {
-  const TransactionScreen({super.key});
+  final int type;
+  const TransactionScreen({super.key, required this.type});
 
   @override
   State<TransactionScreen> createState() => _TransactionScreenState();
@@ -61,7 +62,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
     try {
       List<Transaction> newTransactions =
-          await TransactionAPI.fetchTransactionsFromAPI(context, page, 10);
+          await TransactionAPI.fetchTransactionsFromAPI(
+            context,
+            widget.type,
+            page: page,
+            limit: 10,
+            search: search.text,
+          );
 
       debugPrint('Fetched ${newTransactions.length} transactions');
 
@@ -105,7 +112,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
     try {
       List<Transaction> latestTransactions =
-          await TransactionAPI.fetchTransactionsFromAPI(context, page, 10);
+          await TransactionAPI.fetchTransactionsFromAPI(
+            context,
+            widget.type,
+            page: page,
+            limit: 10,
+            search: search.text,
+          );
 
       if (latestTransactions.isNotEmpty) {
         transactions.addAll(latestTransactions);
@@ -129,6 +142,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
     groupedTransactions.clear();
     for (var trans in transactions) {
       groupedTransactions.putIfAbsent(trans.date, () => []).add(trans);
+    }
+    debugPrint('Grouped transactions: ');
+    for (var entry in groupedTransactions.entries) {
+      debugPrint('${entry.key}: ${entry.value.length} transactions');
     }
   }
 
@@ -154,6 +171,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshTransactions();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,7 +189,14 @@ class _TransactionScreenState extends State<TransactionScreen> {
             pinned: true, // Ensures the app bar remains visible when scrolling
             floating: false, // No snap effect
             elevation: 0,
-            title: Text('Sales', style: AppTextStyles.headingWhite),
+            title: Text(
+              widget.type == 1
+                  ? 'Penjualan'
+                  : widget.type == 2
+                  ? 'Pembelian'
+                  : 'Tukar Tambah',
+              style: AppTextStyles.headingWhite,
+            ),
             leading: IconButton(
               icon: const Icon(CupertinoIcons.arrow_left, color: Colors.white),
               onPressed: () {
@@ -183,7 +214,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 0,
                 children: [
-                  SearchBarWidget(controller: search),
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ),
                   ...groupedTransactions.entries.map(
                     (entry) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,6 +237,29 @@ class _TransactionScreenState extends State<TransactionScreen> {
               ),
             ),
           ),
+          // No Data Indicator
+          if (transactions.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada transaksi ditemukan",
+                        style: AppTextStyles.headingBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(
@@ -215,7 +272,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.push('/transaction/add');
+          context.push('/transaction/add', extra: widget.type);
         },
         backgroundColor: AppColors.pinkPrimary,
         child: const Icon(CupertinoIcons.add, color: Colors.white),

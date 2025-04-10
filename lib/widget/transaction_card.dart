@@ -199,11 +199,18 @@ class _TransactionCardState extends State<TransactionCard> {
                     children:
                         trans.transactionProducts
                             .map(
-                              (product) => ItemCardDetail(
-                                name: product.name.split(' - ')[1],
-                                code: product.name.split(' - ')[0],
-                                totalPrice: product.totalPrice,
-                              ),
+                              (product) =>
+                                  product.productCodeId != ''
+                                      ? ItemCardDetail(
+                                        name: product.name.split(' - ')[1],
+                                        code: product.name.split(' - ')[0],
+                                        totalPrice: product.totalPrice,
+                                      )
+                                      : ItemCardDetail(
+                                        name: 'Outside Product',
+                                        code: '${product.weight} gr',
+                                        totalPrice: product.totalPrice,
+                                      ),
                             )
                             .toList(),
                   ),

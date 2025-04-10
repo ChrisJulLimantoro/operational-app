@@ -9,6 +9,7 @@ import 'package:operational_app/model/stock_out.dart';
 import 'package:operational_app/notifier/stock_out_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:provider/provider.dart';
 
@@ -61,8 +62,9 @@ class _StockOutScreenState extends State<StockOutScreen> {
     try {
       List<StockOut> newStockOuts = await StockOutAPI.fetchStockOuts(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
       debugPrint("New Stock Opnames: $newStockOuts");
 
@@ -105,11 +107,13 @@ class _StockOutScreenState extends State<StockOutScreen> {
     try {
       List<StockOut> latestStockOuts = await StockOutAPI.fetchStockOuts(
         context,
-        page,
-        10,
+        page: page,
+        limit: 10,
+        search: search.text,
       );
 
       if (latestStockOuts.isNotEmpty) {
+        page++;
         stockOuts.addAll(latestStockOuts);
         _groupStockOpnames();
       } else {
@@ -166,6 +170,13 @@ class _StockOutScreenState extends State<StockOutScreen> {
     });
   }
 
+  void _onSearchChanged() {
+    _scroll.jumpTo(0);
+    if (isLoading) return;
+
+    _refreshStockOuts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,109 +198,132 @@ class _StockOutScreenState extends State<StockOutScreen> {
               },
             ),
           ),
-          groupedStockOuts.isNotEmpty || isLoading
-              ? SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  child: Column(
-                    spacing: 12,
-                    children: [
-                      ...groupedStockOuts.entries.map(
-                        (so) => Column(
-                          spacing: 12,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                DateHelper.formatDate(so.key),
-                                style: AppTextStyles.subheadingBlue,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(left: 20, top: 4, bottom: 24, right: 20),
+              child: Column(
+                spacing: 0,
+                children: [
+                  SearchBarWidget(
+                    controller: search,
+                    onChanged: _onSearchChanged,
+                  ),
+                  ...groupedStockOuts.entries.map(
+                    (so) => Column(
+                      spacing: 12,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            DateHelper.formatDate(so.key),
+                            style: AppTextStyles.subheadingBlue,
+                          ),
+                        ), //
+                        ...so.value.map(
+                          (stockOut) => Card(
+                            color: Colors.white,
+                            elevation: 1,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 24,
                               ),
-                            ), //
-                            ...so.value.map(
-                              (stockOut) => Card(
-                                color: Colors.white,
-                                elevation: 1,
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 24,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    spacing: 8,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 8,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            stockOut.barcode,
-                                            style: AppTextStyles.subheadingBlue,
+                                      Text(
+                                        stockOut.barcode,
+                                        style: AppTextStyles.subheadingBlue,
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          // Delete Stock Out / Cancel
+                                          _unstockOut(stockOut.id);
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            8.0,
                                           ),
-                                          InkWell(
-                                            onTap: () {
-                                              // Delete Stock Out / Cancel
-                                              _unstockOut(stockOut.id);
-                                            },
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: Container(
-                                                color: AppColors.error,
-                                                padding: EdgeInsets.all(8.0),
-                                                child: Icon(
-                                                  CupertinoIcons.trash,
-                                                  color: Colors.white,
-                                                  size: 20,
-                                                ),
-                                              ),
+                                          child: Container(
+                                            color: AppColors.error,
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Icon(
+                                              CupertinoIcons.trash,
+                                              color: Colors.white,
+                                              size: 20,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      Divider(),
-                                      TextCardDetail(
-                                        label: 'Nama',
-                                        value: stockOut.name.split(' - ')[1],
-                                        type: 'text',
-                                      ),
-                                      TextCardDetail(
-                                        label: 'SubKategori',
-                                        value: stockOut.type,
-                                        type: 'text',
-                                      ),
-                                      TextCardDetail(
-                                        label: 'Harga',
-                                        value: stockOut.price,
-                                        type: 'currency',
-                                      ),
-                                      TextCardDetail(
-                                        label: 'Alasan',
-                                        value:
-                                            stockOut.takenOutReason == 1
-                                                ? 'Sedang diperbaiki'
-                                                : stockOut.takenOutReason == 2
-                                                ? 'Hilang'
-                                                : 'Lainnya',
-                                        type: 'text',
+                                        ),
                                       ),
                                     ],
                                   ),
-                                ),
+                                  Divider(),
+                                  TextCardDetail(
+                                    label: 'Nama',
+                                    value: stockOut.name.split(' - ')[1],
+                                    type: 'text',
+                                  ),
+                                  TextCardDetail(
+                                    label: 'SubKategori',
+                                    value: stockOut.type,
+                                    type: 'text',
+                                  ),
+                                  TextCardDetail(
+                                    label: 'Harga',
+                                    value: stockOut.price,
+                                    type: 'currency',
+                                  ),
+                                  TextCardDetail(
+                                    label: 'Alasan',
+                                    value:
+                                        stockOut.takenOutReason == 1
+                                            ? 'Sedang diperbaiki'
+                                            : stockOut.takenOutReason == 2
+                                            ? 'Hilang'
+                                            : 'Lainnya',
+                                    type: 'text',
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // No Data Indicator
+          if (stockOuts.isEmpty && !isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 52),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        size: 70,
+                        color: AppColors.error,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        "Tidak ada stock out ditemukan",
+                        style: AppTextStyles.headingBlue,
                       ),
                     ],
                   ),
                 ),
-              )
-              : SliverFillRemaining(
-                child: Center(child: Text('No Stock Opname for this Store')),
               ),
+            ),
           // Loading Indicator
           if (isLoading)
             SliverToBoxAdapter(
