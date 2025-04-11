@@ -87,6 +87,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
 
   Future<void> _downloadPDF() async {
     try {
+      // Request storage permission only for Android
       if (Platform.isAndroid) {
         var status = await Permission.manageExternalStorage.request();
         if (!status.isGranted) {
@@ -96,11 +97,29 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
       }
 
       Directory? directory;
+
+      // Set directory based on platform
       if (Platform.isAndroid) {
-        directory = Directory(
-          '/storage/emulated/0/Download',
-        ); // Save to Downloads
-      } else {
+        // Downloads folder (modern versions support this via getExternalStorageDirectory)
+        directory = await getExternalStorageDirectory();
+        if (directory != null) {
+          // optional: move up to the main storage
+          String newPath = "";
+          List<String> folders = directory.path.split("/");
+          for (int i = 1; i < folders.length; i++) {
+            String folder = folders[i];
+            if (folder == "Android") break;
+            newPath += "/" + folder;
+          }
+          newPath += "/Download";
+          directory = Directory(newPath);
+        } else {
+          directory = Directory(
+            '/storage/emulated/0/Download',
+          );
+        }
+      } else if (Platform.isIOS) {
+        // Safe internal directory for iOS
         directory = await getApplicationDocumentsDirectory();
       }
 
@@ -116,6 +135,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
       await file.writeAsBytes(await File(filePath!).readAsBytes());
 
       if (!context.mounted) return;
+
       NotificationHelper.showNotificationSheet(
         context: context,
         title: 'Sukses',
@@ -129,7 +149,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
       NotificationHelper.showNotificationSheet(
         context: context,
         title: 'Gagal',
-        message: 'error $e',
+        message: 'Error: $e',
         primaryButtonText: "OK",
         onPrimaryPressed: () {},
         primaryColor: AppColors.error,
