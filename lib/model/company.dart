@@ -21,8 +21,11 @@ class Company {
       code: json['code'],
       name: json['name'],
       description: json['description'] ?? '-',
-      ownerId: json['owner_id'],
-      createdAt: DateTime.tryParse(json['created_at']),
+      ownerId: json['owner_id'] ?? '-',
+      createdAt:
+          json['created_at'] != null
+              ? DateTime.tryParse(json['created_at'])
+              : null,
     );
   }
 }

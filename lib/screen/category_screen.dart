@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/category.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/model/category.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
@@ -151,6 +153,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'master/category',
+    );
     return Scaffold(
       body: CustomScrollView(
         controller: _scroll,
@@ -184,7 +189,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ...categories.map(
                     (category) => InkWell(
                       onTap: () {
-                        context.push('/category-detail', extra: category);
+                        if (actions.contains('detail')) {
+                          context.push('/category-detail', extra: category);
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),

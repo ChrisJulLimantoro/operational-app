@@ -50,6 +50,13 @@ class AppTextStyles {
     letterSpacing: -0.5,
   );
 
+  static const TextStyle labelGrey = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    color: Colors.grey,
+    letterSpacing: -0.5,
+  );
+
   static const TextStyle labelBlueItalic = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w300,

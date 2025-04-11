@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/helper/router.dart';
 import 'package:operational_app/notifier/sales_notifier.dart';
@@ -17,6 +18,9 @@ void main() {
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()..loadAuthParams(context)),
+        BlocProvider(
+          create: (context) => PermissionCubit()..fetchPermissions(context),
+        ),
         ChangeNotifierProvider(create: (context) => StockOpnameNotifier()),
         ChangeNotifierProvider(create: (context) => StockOutNotifier()),
         ChangeNotifierProvider(create: (context) => SalesNotifier()),

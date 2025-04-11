@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:operational_app/api/transaction.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/notifier/sales_notifier.dart';
@@ -180,6 +181,18 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final feature =
+        widget.type == 1
+            ? 'transaction/sales'
+            : widget.type == 2
+            ? 'transaction/purchase'
+            : 'transaction/trade';
+    final permissionAdd = context.read<PermissionCubit>().state.hasPermission(
+      feature,
+      'add',
+    );
+
+    final actions = context.read<PermissionCubit>().state.actions(feature);
     return Scaffold(
       body: CustomScrollView(
         scrollBehavior: CupertinoScrollBehavior(),
@@ -228,7 +241,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
                           style: AppTextStyles.subheadingBlue,
                         ), // Date header
                         ...entry.value.map(
-                          (trans) => TransactionCard(trans: trans),
+                          (trans) =>
+                              TransactionCard(trans: trans, actions: actions),
                         ),
                       ],
                     ),
@@ -272,9 +286,12 @@ class _TransactionScreenState extends State<TransactionScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.push('/transaction/add', extra: widget.type);
+          // Check permission level for adding transactions
+          if (permissionAdd) {
+            context.push('/transaction/add', extra: widget.type);
+          }
         },
-        backgroundColor: AppColors.pinkPrimary,
+        backgroundColor: permissionAdd ? AppColors.pinkPrimary : Colors.grey,
         child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );

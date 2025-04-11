@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/store.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/model/store.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
@@ -151,6 +153,9 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'master/store',
+    );
     return Scaffold(
       body: CustomScrollView(
         controller: _scroll,
@@ -183,7 +188,10 @@ class _StoreScreenState extends State<StoreScreen> {
                   ...stores.map(
                     (store) => InkWell(
                       onTap:
-                          () => {context.push('/store-detail', extra: store)},
+                          () => {
+                            if (actions.contains('detail'))
+                              {context.push('/store-detail', extra: store)},
+                          },
                       child: Padding(
                         padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
                         child: Card(

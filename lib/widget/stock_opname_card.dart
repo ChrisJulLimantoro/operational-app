@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/stock_opname.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/model/stock_opname.dart';
 import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
@@ -20,6 +21,7 @@ class StockOpnameCard extends StatefulWidget {
 class _StockOpnameCardState extends State<StockOpnameCard> {
   bool approve = false;
   int status = 0;
+
   Future<void> _toogleApprove(BuildContext context, bool approve) async {
     // Implement your approve logic here
     if (!context.mounted) return;
@@ -42,11 +44,17 @@ class _StockOpnameCardState extends State<StockOpnameCard> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'inventory/stock-opname',
+    );
+
     return InkWell(
       onTap: () {
-        GoRouter.of(
-          context,
-        ).push('/stock-opname-detail', extra: widget.stockOpname);
+        if (actions.contains('detail')) {
+          GoRouter.of(
+            context,
+          ).push('/stock-opname-detail', extra: widget.stockOpname);
+        }
       },
       child: Card(
         color: Colors.white,
@@ -90,7 +98,7 @@ class _StockOpnameCardState extends State<StockOpnameCard> {
                         width: 8,
                       ), // Space between status and button
                       // Approve/Disapprove Button
-                      !widget.stockOpname.approve
+                      !widget.stockOpname.approve && actions.contains('approve')
                           ? Container(
                             height: 32,
                             width: 48,
@@ -109,7 +117,9 @@ class _StockOpnameCardState extends State<StockOpnameCard> {
                               },
                             ),
                           )
-                          : Container(
+                          : widget.stockOpname.approve &&
+                              actions.contains('disapprove')
+                          ? Container(
                             height: 32,
                             width: 48,
                             decoration: BoxDecoration(
@@ -126,7 +136,8 @@ class _StockOpnameCardState extends State<StockOpnameCard> {
                                 _toogleApprove(context, false);
                               },
                             ),
-                          ),
+                          )
+                          : SizedBox(),
                     ],
                   ),
                 ],

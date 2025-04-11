@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/stock_out.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/stock_out.dart';
 import 'package:operational_app/notifier/stock_out_notifier.dart';
@@ -179,6 +180,9 @@ class _StockOutScreenState extends State<StockOutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'inventory/stock-out',
+    );
     return Scaffold(
       body: CustomScrollView(
         scrollBehavior: const CupertinoScrollBehavior(),
@@ -241,26 +245,27 @@ class _StockOutScreenState extends State<StockOutScreen> {
                                         stockOut.barcode,
                                         style: AppTextStyles.subheadingBlue,
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          // Delete Stock Out / Cancel
-                                          _unstockOut(stockOut.id);
-                                        },
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8.0,
-                                          ),
-                                          child: Container(
-                                            color: AppColors.error,
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Icon(
-                                              CupertinoIcons.trash,
-                                              color: Colors.white,
-                                              size: 20,
+                                      if (actions.contains('delete'))
+                                        InkWell(
+                                          onTap: () {
+                                            // Delete Stock Out / Cancel
+                                            _unstockOut(stockOut.id);
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8.0,
+                                            ),
+                                            child: Container(
+                                              color: AppColors.error,
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(
+                                                CupertinoIcons.trash,
+                                                color: Colors.white,
+                                                size: 20,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                   Divider(),
@@ -336,9 +341,12 @@ class _StockOutScreenState extends State<StockOutScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.push('/stock-out/add');
+          if (actions.contains('add')) {
+            context.push('/stock-out/add');
+          }
         },
-        backgroundColor: AppColors.pinkPrimary,
+        backgroundColor:
+            actions.contains('add') ? AppColors.pinkPrimary : Colors.grey,
         child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );

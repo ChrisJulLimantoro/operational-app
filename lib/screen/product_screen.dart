@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:operational_app/api/product.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/model/product.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
@@ -144,6 +146,9 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'inventory/product',
+    );
     return Scaffold(
       body: CustomScrollView(
         scrollBehavior: const CupertinoScrollBehavior(),
@@ -176,9 +181,11 @@ class _ProductScreenState extends State<ProductScreen> {
                   ...products.map(
                     (product) => InkWell(
                       onTap: () {
-                        GoRouter.of(
-                          context,
-                        ).push('/product-detail', extra: product);
+                        if (actions.contains('detail')) {
+                          GoRouter.of(
+                            context,
+                          ).push('/product-detail', extra: product);
+                        }
                       },
                       child: Card(
                         color: Colors.white,
