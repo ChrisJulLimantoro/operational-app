@@ -745,9 +745,11 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
   Future<void> _submit() async {
     // Submit Transaction
-    form['transaction_details'] = [
+    form['transaction_products'] = [
       ...itemSold.map((item) => TransactionProduct.toJSON(item)),
       ...itemBought.map((item) => TransactionProduct.toJSON(item)),
+    ];
+    form['transaction_operations'] = [
       ...operations.map((item) => TransactionOperation.toJSON(item)),
     ];
     final response = await TransactionAPI.submitTransaction(context, form);
