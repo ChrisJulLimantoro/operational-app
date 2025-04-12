@@ -95,18 +95,22 @@ class TransactionAPI {
       final soldCount =
           (form['transaction_details'] as List)
               .where(
-                (tp) => tp.transaction_type == 1 && tp.detail_type == 'product',
+                (tp) =>
+                    tp['transaction_type'] == 1 &&
+                    tp['detail_type'] == 'product',
               )
               .length;
       final boughtCount =
           (form['transaction_details'] as List)
               .where(
-                (tp) => tp.transaction_type == 2 && tp.detail_type == 'product',
+                (tp) =>
+                    tp['transaction_type'] == 2 &&
+                    tp['detail_type'] == 'product',
               )
               .length;
       final operationCount =
           (form['transaction_details'] as List)
-              .where((to) => to.detail_type == 'operation')
+              .where((to) => to['detail_type'] == 'operation')
               .length;
 
       // for Sales
