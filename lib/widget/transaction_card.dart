@@ -13,8 +13,13 @@ import 'package:provider/provider.dart';
 
 class TransactionCard extends StatefulWidget {
   final Transaction trans;
+  final List<String> actions;
 
-  const TransactionCard({super.key, required this.trans});
+  const TransactionCard({
+    super.key,
+    required this.trans,
+    required this.actions,
+  });
 
   @override
   State<TransactionCard> createState() => _TransactionCardState();
@@ -66,10 +71,15 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(widget.actions.toString());
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => {context.push('/transaction-detail', extra: trans)},
+        onTap:
+            () => {
+              if (widget.actions.contains('detail'))
+                {context.push('/transaction-detail', extra: trans)},
+            },
         borderRadius: BorderRadius.circular(8),
 
         child: Card(
@@ -91,36 +101,30 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
 
                     // Right-side status and button grouped together
                     Row(
+                      spacing: 8,
                       children: [
-                        // Expandable Status Container
-                        // Container(
-                        //   padding: const EdgeInsets.symmetric(
-                        //     horizontal: 12, // More padding for dynamic text
-                        //     vertical: 6,
-                        //   ),
-                        //   decoration: BoxDecoration(
-                        //     color: AppColors.pinkTertiary,
-                        //     borderRadius: BorderRadius.circular(8),
-                        //   ),
-                        //   alignment: Alignment.center,
-                        //   child: Text(
-                        //     trans.status == 0
-                        //         ? "Draft"
-                        //         : trans.status == 1
-                        //         ? "Pending"
-                        //         : trans.status == 2
-                        //         ? "Paid"
-                        //         : trans.status == 3
-                        //         ? "Taken"
-                        //         : "Cancel", // This text can expand dynamically
-                        //     style: AppTextStyles.labelPink,
-                        //   ),
-                        // ),
-                        // const SizedBox(
-                        //   width: 8,
-                        // ), // Space between status and button
+                        // Delete Button
+                        // trans.approve == 0 && widget.actions.contains('delete')
+                        //     ? Container(
+                        //       height: 32,
+                        //       width: 48,
+                        //       decoration: BoxDecoration(
+                        //         color: AppColors.error,
+                        //         borderRadius: BorderRadius.circular(8),
+                        //       ),
+                        //       child: IconButton(
+                        //         icon: Icon(CupertinoIcons.delete),
+                        //         iconSize: 16.0,
+                        //         color: AppColors.textWhite,
+                        //         padding: EdgeInsets.all(0),
+                        //         onPressed: () {
+                        //           debugPrint("Approve Button Clicked");
+                        //         },
+                        //       ),
+                        //     )
+                        //     : SizedBox(),
                         // Approve/Disapprove Button
-                        trans.approve == 0
+                        trans.approve == 0 && widget.actions.contains('approve')
                             ? Container(
                               height: 32,
                               width: 48,
@@ -141,7 +145,9 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
                                 },
                               ),
                             )
-                            : Container(
+                            : widget.actions.contains('disapprove') &&
+                                trans.approve == 1
+                            ? Container(
                               height: 32,
                               width: 48,
                               decoration: BoxDecoration(
@@ -158,7 +164,8 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
                                   _approveDisapprove(context,trans.approve, this.trans.transactionType, trans.id);
                                 },
                               ),
-                            ),
+                            )
+                            : SizedBox(),
                       ],
                     ),
                   ],

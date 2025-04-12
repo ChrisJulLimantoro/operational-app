@@ -47,7 +47,7 @@ class AuthAPI {
           return true;
         }
         final authCubit = context.read<AuthCubit>();
-        authCubit.updateAuth(
+        await authCubit.updateAuth(
           context,
           data['store_id'],
           data['company_id'],
@@ -145,6 +145,37 @@ class AuthAPI {
         );
       }
       return;
+    }
+  }
+
+  static Future<List<dynamic>> fetchPermission(BuildContext context) async {
+    try {
+      final response = await ApiHelper.get(context, '/auth/pages-available');
+
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+
+      return response.data['data'];
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        NotificationHelper.showSnackbar(
+          message: "Connection timeout. Please try again.",
+          backgroundColor: AppColors.error,
+          actionLabel: "Retry",
+          onActionPressed: () => fetchPermission(context),
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Login Gagal",
+          message: e.response?.data['message'] ?? "Gagal Masuk",
+          primaryButtonText: "Okay",
+          onPrimaryPressed: () {},
+        );
+      }
+      return [];
     }
   }
 }

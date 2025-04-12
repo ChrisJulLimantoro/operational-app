@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/category.dart';
 import 'package:operational_app/api/stock_opname.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/format_date.dart';
 import 'package:operational_app/model/category.dart';
 import 'package:operational_app/model/stock_opname.dart';
@@ -204,6 +205,9 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = context.read<PermissionCubit>().state.actions(
+      'inventory/stock-opname',
+    );
     return Scaffold(
       body: CustomScrollView(
         scrollBehavior: const CupertinoScrollBehavior(),
@@ -268,6 +272,9 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          if (!actions.contains('add')) {
+            return;
+          }
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -411,7 +418,8 @@ class _StockOpnameScreenState extends State<StockOpnameScreen> {
             },
           );
         },
-        backgroundColor: AppColors.pinkPrimary,
+        backgroundColor:
+            actions.contains('add') ? AppColors.pinkPrimary : Colors.grey,
         child: const Icon(CupertinoIcons.add, color: Colors.white),
       ),
     );

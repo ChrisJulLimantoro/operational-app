@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/store.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/model/store.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
@@ -26,12 +27,42 @@ class _HomeScreenState extends State<HomeScreen> {
       {
         "group": "Menu Master",
         "items": [
-          {"title": "Usaha", "icon": Icons.store, "route": "/company"},
-          {"title": "Cabang", "icon": Icons.business, "route": "/store"},
-          {"title": "Pegawai", "icon": Icons.people, "route": "/employee"},
-          {"title": "Kategori", "icon": Icons.category, "route": "/category"},
-          {"title": "Produk", "icon": Icons.category, "route": "/product"},
-          {"title": "Operasi", "icon": Icons.category, "route": "/operation"},
+          {
+            "title": "Usaha",
+            "icon": Icons.store,
+            "route": "/company",
+            "feature": "master/company",
+          },
+          {
+            "title": "Cabang",
+            "icon": Icons.business,
+            "route": "/store",
+            "feature": "master/store",
+          },
+          {
+            "title": "Pegawai",
+            "icon": Icons.people,
+            "route": "/employee",
+            "feature": "master/employee",
+          },
+          {
+            "title": "Kategori",
+            "icon": Icons.category,
+            "route": "/category",
+            "feature": "master/category",
+          },
+          {
+            "title": "Produk",
+            "icon": Icons.production_quantity_limits,
+            "route": "/product",
+            "feature": "inventory/product",
+          },
+          {
+            "title": "Operasi",
+            "icon": Icons.cases,
+            "route": "/operation",
+            "feature": "inventory/operation",
+          },
         ],
       },
     ],
@@ -43,24 +74,37 @@ class _HomeScreenState extends State<HomeScreen> {
             "title": "Stock Opname",
             "icon": Icons.check_box,
             "route": "/stock-opname",
+            "feature": "inventory/stock-opname",
           },
           {
             "title": "Stock Out",
             "icon": Icons.outbond_sharp,
             "route": "/stock-out",
+            "feature": "inventory/stock-out",
           },
         ],
       },
       {
         "group": "Menu Transaksi",
         "items": [
-          {"title": "Penjualan", "icon": Icons.sell, "route": "/sales"},
+          {
+            "title": "Penjualan",
+            "icon": Icons.sell,
+            "route": "/sales",
+            "feature": "transaction/sales",
+          },
           {
             "title": "Pembelian",
             "icon": Icons.shopping_bag,
             "route": "/purchase",
+            "feature": "transaction/purchase",
           },
-          {"title": "Trade", "icon": Icons.undo, "route": "/trade"},
+          {
+            "title": "Trade",
+            "icon": Icons.undo,
+            "route": "/trade",
+            "feature": "transaction/trade",
+          },
         ],
       },
     ],
@@ -72,16 +116,19 @@ class _HomeScreenState extends State<HomeScreen> {
             "title": "Laba rugi",
             "icon": Icons.bar_chart,
             "route": "/profit-loss",
+            "feature": "finance/profit-loss",
           },
           {
             "title": "Mutasi Stok",
             "icon": Icons.inventory,
             "route": "/stock-mutation",
+            "feature": "finance/stock-mutation",
           },
           {
             "title": "Kartu Stok",
             "icon": Icons.checklist,
             "route": "/stock-card",
+            "feature": "finance/stock-card",
           },
         ],
       },
@@ -118,16 +165,42 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchStore();
+    _searchController.addListener(() {
+      setState(() {}); // rebuild on search text change
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    String query = _searchController.text.toLowerCase();
+
     List<Map<String, dynamic>> filteredMenu =
-        _menuData[_selectedTabIndex] ?? [];
+        (_menuData[_selectedTabIndex] ?? [])
+            .map((group) {
+              List<Map<String, dynamic>> filteredItems =
+                  (group['items'] as List<Map<String, dynamic>>)
+                      .where(
+                        (item) => item['title'].toLowerCase().contains(query),
+                      )
+                      .toList();
+
+              return {'group': group['group'], 'items': filteredItems};
+            })
+            .where((group) => (group['items'] as List).isNotEmpty)
+            .toList();
 
     return BlocListener<AuthCubit, AuthState>(
       listenWhen: (prev, state) => prev.storeId != state.storeId,
       listener: (context, state) {
+        if (state.storeId.isNotEmpty) {
+          context.read<PermissionCubit>().fetchPermissions(context);
+        }
         _fetchStore();
       },
       child: Scaffold(
@@ -195,7 +268,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 /// Menu Section
-                /// Menu Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Container(
@@ -229,32 +301,43 @@ class _HomeScreenState extends State<HomeScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  for (
-                                    var i = 0;
-                                    i < filteredMenu[x]['items'].length;
-                                    i += 3
-                                  )
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 24.0,
+                                  if (filteredMenu[x]['items'].length == 0)
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Center(
+                                        child: Text("Menu tidak ditemukan!"),
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          for (var j = i; j < i + 3; j++)
-                                            if (j <
-                                                filteredMenu[x]['items'].length)
-                                              Expanded(
-                                                child: _buildMenuItem(
-                                                  filteredMenu[x]['items'][j],
+                                    )
+                                  else
+                                    for (
+                                      var i = 0;
+                                      i < filteredMenu[x]['items'].length;
+                                      i += 3
+                                    )
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 24.0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            for (var j = i; j < i + 3; j++)
+                                              if (j <
+                                                  filteredMenu[x]['items']
+                                                      .length)
+                                                Expanded(
+                                                  child: _buildMenuItem(
+                                                    filteredMenu[x]['items'][j],
+                                                  ),
+                                                )
+                                              else
+                                                const Expanded(
+                                                  child: SizedBox(),
                                                 ),
-                                              )
-                                            else
-                                              const Expanded(child: SizedBox()),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
                                 ],
                               ),
                             ],
@@ -296,9 +379,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Build a menu button
   Widget _buildMenuItem(Map<String, dynamic> item) {
+    final condition = context.read<PermissionCubit>().state.hasPermission(
+      item["feature"],
+      'open',
+    );
     return InkWell(
       onTap: () {
-        GoRouter.of(context).push(item["route"]); // Navigate to the route
+        // Check if the user has permission to access this feature
+        if (condition) {
+          GoRouter.of(context).push(item["route"]); // Navigate to the route
+        }
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -307,13 +397,24 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _tabColors[_selectedTabIndex],
+              color:
+                  condition
+                      ? _tabColors[_selectedTabIndex]
+                      : Colors.grey.shade600,
               shape: BoxShape.circle,
             ),
-            child: Icon(item["icon"], size: 30, color: Colors.white),
+            child: Icon(
+              item["icon"],
+              size: 30,
+              color: condition ? Colors.white : Colors.grey.shade200,
+            ),
           ),
           const SizedBox(height: 8),
-          Text(item["title"], style: AppTextStyles.labelBlue),
+          Text(
+            item["title"],
+            style:
+                condition ? AppTextStyles.labelBlue : AppTextStyles.labelGrey,
+          ),
         ],
       ),
     );

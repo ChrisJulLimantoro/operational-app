@@ -103,4 +103,55 @@ class StoreAPI {
       return null;
     }
   }
+
+  static Future<List<Store>> fetchActiveStore(BuildContext context) async {
+    try {
+      final response = await ApiHelper.get(context, '/auth/authorized-store');
+      if (!response.data['success']) {
+        return [];
+      }
+      if (!context.mounted) {
+        return [];
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+
+      List<Store> result = [];
+
+      for (var company in response.data['data'] as List) {
+        Map<String, dynamic> companyCopy = Map.of(company)..remove('stores');
+        final storeList = company['stores'] as List<dynamic>? ?? [];
+
+        for (var store in storeList) {
+          result.add(Store.fromJSON({...store, 'company': companyCopy}));
+        }
+      }
+
+      return result;
+    } on DioException catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchStores(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return [];
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchStores(context),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return [];
+    }
+  }
 }

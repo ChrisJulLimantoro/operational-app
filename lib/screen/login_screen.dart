@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:operational_app/api/auth.dart';
+import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,7 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response) {
       _emailController.clear();
       _passwordController.clear();
-      debugPrint("Login success");
+
+      // Fetching Permissions
+      if (!context.mounted) return;
+      await context.read<PermissionCubit>().fetchPermissions(context);
+
+      // Assuming the login was successful, navigate to the home screen
       context.go('/home');
     }
   }

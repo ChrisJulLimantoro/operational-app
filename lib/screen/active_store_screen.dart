@@ -25,7 +25,7 @@ class _ActiveStoreScreenState extends State<ActiveStoreScreen> {
     if (isLoading) return;
 
     setState(() => isLoading = true);
-    List<Store> newStores = await StoreAPI.fetchStores(context);
+    List<Store> newStores = await StoreAPI.fetchActiveStore(context);
     Set<String> existingIds = stores.map((store) => store.id).toSet();
 
     List<Store> uniqueStores =
