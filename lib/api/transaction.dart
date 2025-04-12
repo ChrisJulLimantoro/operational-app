@@ -7,6 +7,7 @@ import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/model/transaction_product.dart';
 import 'package:operational_app/theme/colors.dart';
 
 class TransactionAPI {
@@ -91,12 +92,51 @@ class TransactionAPI {
       form['date'] = form['date'].toString();
 
       // Check validation for detail
-      if (form['transaction_products'] == null &&
-          form['transaction_operations'] == null) {
+      final soldCount =
+          (form['transaction_products'] as List<TransactionProduct>)
+              .where((tp) => tp.transactionType == 1)
+              .length;
+      final boughtCount =
+          (form['transaction_products'] as List<TransactionProduct>)
+              .where((tp) => tp.transactionType == 2)
+              .length;
+      // for Sales
+      if (soldCount == 0 &&
+          form['transaction_operations'].isEmpty() &&
+          form['transaction_type'] == 1) {
         NotificationHelper.showNotificationSheet(
           context: context,
           title: "Gagal",
-          message: "Silahkan pilih produk atau jasa",
+          message: "Silahkan pilih produk atau jasa untuk dijual",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+      // for Purchase
+      if (boughtCount == 0 && form['transaction_type'] == 2) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Silahkan pilih produk untuk dijual",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+      // for Trade
+      if (form['transaction_type'] == 3 &&
+          (boughtCount == 0 &&
+              (soldCount == 0 || form['transaction_operations'].isEmpty()))) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message:
+              boughtCount == 0
+                  ? "Silahkan pilih produk untuk dibeli dari customer"
+                  : "Silahkan pilih produk atau jasa untuk dijual",
           primaryButtonText: "OK",
           onPrimaryPressed: () {},
           primaryColor: AppColors.error,
