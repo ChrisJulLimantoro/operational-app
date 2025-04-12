@@ -93,16 +93,25 @@ class TransactionAPI {
 
       // Check validation for detail
       final soldCount =
-          (form['transaction_products'] as List<TransactionProduct>)
-              .where((tp) => tp.transactionType == 1)
+          (form['transaction_details'] as List)
+              .where(
+                (tp) => tp.transactionType == 1 && tp.detail_type == 'product',
+              )
               .length;
       final boughtCount =
-          (form['transaction_products'] as List<TransactionProduct>)
-              .where((tp) => tp.transactionType == 2)
+          (form['transaction_details'] as List)
+              .where(
+                (tp) => tp.transactionType == 2 && tp.detail_type == 'product',
+              )
               .length;
+      final operationCount =
+          (form['transaction_details'] as List)
+              .where((to) => to.detail_type == 'operation')
+              .length;
+
       // for Sales
       if (soldCount == 0 &&
-          form['transaction_operations'].isEmpty() &&
+          operationCount == 0 &&
           form['transaction_type'] == 1) {
         NotificationHelper.showNotificationSheet(
           context: context,
@@ -128,8 +137,7 @@ class TransactionAPI {
       }
       // for Trade
       if (form['transaction_type'] == 3 &&
-          (boughtCount == 0 &&
-              (soldCount == 0 || form['transaction_operations'].isEmpty()))) {
+          (boughtCount == 0 && (soldCount == 0 || operationCount == 0))) {
         NotificationHelper.showNotificationSheet(
           context: context,
           title: "Gagal",
