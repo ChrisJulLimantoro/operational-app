@@ -28,7 +28,7 @@ class TransactionCard extends StatefulWidget {
 class _TransactionCardState extends State<TransactionCard> {
   late Transaction trans;
 
-Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId) async {
+Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) async {
     var newStatus = (prevStatus == 0) ? 1 : 0;
     var message = newStatus == 1 ? 'Apakah anda yakin approve transaksi ${trans.code}' : 'Apakah anda yakin disapprove transaksi ${trans.code}';
     // Submit Transaction
@@ -66,12 +66,12 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
   void initState() {
     super.initState();
     trans = widget.trans; // Store the received parameter
-    debugPrint(trans.toString());
+    debugPrint('widget tras ${trans.toString()}');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(widget.actions.toString());
+    debugPrint('widget actuibs ${widget.actions.toString()}');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -251,7 +251,7 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
                               (product) =>
                                   product.productCodeId != ''
                                       ? ItemCardDetail(
-                                        name: product.name.split(' - ')[1],
+                                        name: product.name.split(' - ').length > 2 ? product.name.split(' - ')[1] : '',
                                         code: product.name.split(' - ')[0],
                                         totalPrice: product.totalPrice,
                                       )
@@ -271,7 +271,7 @@ Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId
                         trans.transactionOperations
                             .map(
                               (operation) => ItemCardDetail(
-                                name: operation.name.split(' - ')[1],
+                                name: operation.name.split(' - ').length > 1 ?  operation.name.split(' - ')[1] : '',
                                 code: operation.name.split(' - ')[0],
                                 totalPrice: operation.totalPrice,
                               ),

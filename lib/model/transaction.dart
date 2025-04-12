@@ -1,3 +1,4 @@
+import 'package:operational_app/model/account.dart';
 import 'package:operational_app/model/customer.dart';
 import 'package:operational_app/model/employee.dart';
 import 'package:operational_app/model/transaction_operation.dart';
@@ -25,6 +26,8 @@ class Transaction {
   final Employee? employee;
   final List<TransactionProduct> transactionProducts;
   final List<TransactionOperation> transactionOperations;
+  final Account? account;
+  final String? accountId;
 
   Transaction({
     required this.id,
@@ -48,6 +51,8 @@ class Transaction {
     this.notaLink,
     required this.transactionOperations,
     required this.transactionProducts,
+    this.account,
+    this.accountId,
   });
 
   factory Transaction.fromJSON(Map<String, dynamic> json) {
@@ -79,6 +84,10 @@ class Transaction {
           (json['transaction_products'] as List)
               .map((product) => TransactionProduct.fromJSON(product))
               .toList(),
+      account: json['account'] != null
+          ? Account.fromJSON(json['account'])
+          : null,
+      accountId: json['account_id'] as String?,
     );
   }
 }

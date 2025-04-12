@@ -779,6 +779,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       ...itemBought.map((item) => TransactionProduct.toJSON(item)),
       ...operations.map((item) => TransactionOperation.toJSON(item)),
     ];
+    debugPrint('form: ${form.toString()}');
     final response = await TransactionAPI.submitTransaction(context, form);
     debugPrint(response.toString());
     if (response) {
