@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/accounts.dart';
 import 'package:operational_app/api/category.dart';
 import 'package:operational_app/api/customer.dart';
 import 'package:operational_app/api/operation.dart';
 import 'package:operational_app/api/product.dart';
 import 'package:operational_app/api/transaction.dart';
 import 'package:operational_app/helper/notification.dart';
+import 'package:operational_app/model/account.dart';
 import 'package:operational_app/model/customer.dart';
 import 'package:operational_app/model/operation.dart';
 import 'package:operational_app/model/transaction_operation.dart';
@@ -66,6 +68,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     {"id": 2, "value": "Transfer"},
     {"id": 3, "value": "Debit"},
   ];
+  List<Account> accounts = [];
   List<Map<String, dynamic>> statuses = [
     {"id": 1, "value": "Belum Lunas"},
     {"id": 2, "value": "Lunas"},
@@ -86,6 +89,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     'total_price': 0.0,
     'paid_amount': 0.0,
     'transaction_type': 1,
+    'account_id' : null,
   };
   Map<String, dynamic> config = {
     'tax_percent': null,
@@ -136,14 +140,18 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                     ],
                   ),
                   onOkPressed: () {
-                    Navigator.pop(context, isOpen);
+                    debugPrint('cari produk pressed 1');
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.pop(context, {'isBroken': isOpen});
+                    });
                   },
                   primaryColor: AppColors.success,
                 ),
           );
         },
       );
-      data['isBroken'] = result;
+      // data['isBroken'] = result;
+      data['isBroken'] = result?['isBroken'] ?? false;
       await _fetchProductBought(data);
     } else if (type == 'operation') {
       await _fetchOperation(scanned.split(';')[1]);
@@ -255,9 +263,12 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                   ],
                 ),
                 onOkPressed: () {
-                  Navigator.pop(context, {
-                    'barcode': scannedBarcode,
-                    'isBroken': isOpen,
+                  debugPrint('cari produk pressed 2');
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pop(context, {
+                      'barcode': scannedBarcode,
+                      'isBroken': isOpen,
+                    });
                   });
                 },
                 primaryColor: AppColors.success,
@@ -482,7 +493,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     // Fetch Product sold by ID
     final prod = await ProductAPI.fetchProductCode(context, barcode);
     if (prod != null) {
-      if (prod['status'] == 0 || prod['status'] == 1) {
+      if (prod['status'] == 1) {
         NotificationHelper.showNotificationSheet(
           context: context,
           title: "Gagal",
@@ -681,6 +692,24 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     }
   }
 
+  // Fetch Accounts for tukar kurang TODOELLA
+  Future<void> _fetchAccounts() async {
+    debugPrint('fetching accounts...');
+    final res = await AccountsApi.fetchAccountFromAPI(context, 
+      accountTypeId: '1',
+    );
+    final accountSetting = await AccountsApi.fetchAccountSetting(context, 
+      action: 'purchaseCust',
+    );
+    debugPrint('accountSetting: ${accountSetting.toString()}');
+    setState(() {
+      accounts = res;
+      if (accountSetting.isNotEmpty ) {
+        form['account_id'] = accountSetting[0].accountId;
+      }
+    });
+  }
+
   void cancelProductSold(int index) {
     setState(() {
       itemSold.removeAt(index);
@@ -775,7 +804,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     dateController.text = "${form['date'].toLocal()}".split(' ')[0];
     form['transaction_type'] = widget.type;
     _fetchConfig();
-
+    _fetchAccounts();
+    debugPrint('transaction type: ${widget.type}');
     // Initialize items Details
     // itemSold =
     //     widget.transaction.transactionProducts
@@ -842,7 +872,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: DropdownButtonFormField(
+                            child: 
+                            (form['total_price'] ?? 0) >= 0 ? 
+                            DropdownButtonFormField( // if tukar tambah
                               decoration: InputDecoration(
                                 icon: Icon(Icons.payment),
                                 labelText: "Jenis Pembayaran",
@@ -862,7 +894,31 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                         ),
                                       )
                                       .toList(),
-                            ),
+                            ) :
+                            (form['status'] != 1) ? 
+                             DropdownButtonFormField( // if tukar kurang (store bayar customer pakai apa)
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                icon: Icon(Icons.payment),
+                                labelText: "Account Pembayaran",
+                              ),
+                              value: form['account_id'],
+                              onChanged: (value) {
+                                setState(() {
+                                  form['account_id'] = value;
+                                });
+                              },
+                              items:
+                                  accounts
+                                      .map(
+                                        (item) => DropdownMenuItem(
+                                          value: item.id,
+                                          child: Text('${item.code} - ${item.name}',         overflow: TextOverflow.ellipsis,),
+                                        ),
+                                      )
+                                      .toList(),
+                            )   : null
+                            ,
                           ),
                           Container(
                             decoration: BoxDecoration(

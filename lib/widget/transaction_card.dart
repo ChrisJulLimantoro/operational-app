@@ -1,11 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/transaction.dart';
 import 'package:operational_app/helper/format_currency.dart';
+import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/transaction.dart';
+import 'package:operational_app/notifier/sales_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/item_card_detail.dart';
+import 'package:provider/provider.dart';
 
 class TransactionCard extends StatefulWidget {
   final Transaction trans;
@@ -18,6 +22,40 @@ class TransactionCard extends StatefulWidget {
 
 class _TransactionCardState extends State<TransactionCard> {
   late Transaction trans;
+
+Future<void> _approveDisapprove(context,int prevStatus, transactionType, transId) async {
+    var newStatus = (prevStatus == 0) ? 1 : 0;
+    var message = newStatus == 1 ? 'Apakah anda yakin approve transaksi ${trans.code}' : 'Apakah anda yakin disapprove transaksi ${trans.code}';
+    // Submit Transaction
+    NotificationHelper.showNotificationSheet(
+      context: context,
+      title: "Konfirmasi",
+      primaryColor: AppColors.pinkPrimary,
+      message: message,
+      primaryButtonText: "Ya",
+      secondaryButtonText: "Batalkan",
+      onPrimaryPressed: () async {
+        debugPrint('apprpve lanjut');
+        final response = await TransactionAPI.approveDisapprove(context, newStatus, transId);
+        debugPrint(response.toString());
+        if (response) {
+          NotificationHelper.showNotificationSheet(
+            context: context,
+            title: "Berhasil",
+            message: "Transaksi berhasil di-${newStatus == 1 ? 'approve' : 'disapprove'}",
+            icon: Icons.check_circle_outline,
+            primaryColor: AppColors.success,
+            primaryButtonText: "OK",
+            onPrimaryPressed: () {
+              Provider.of<SalesNotifier>(context, listen: false).markForRefresh();
+              context.pop();
+            },
+          );
+        }
+
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -95,8 +133,11 @@ class _TransactionCardState extends State<TransactionCard> {
                                 iconSize: 16.0,
                                 color: AppColors.textWhite,
                                 padding: EdgeInsets.all(0),
-                                onPressed: () {
+                                onPressed:  () async {
                                   debugPrint("Approve Button Clicked");
+                                  debugPrint(this.trans.transactionType.toString());              
+                                  _approveDisapprove(context,trans.approve, this.trans.transactionType, trans.id);
+                  
                                 },
                               ),
                             )
@@ -113,7 +154,8 @@ class _TransactionCardState extends State<TransactionCard> {
                                 color: AppColors.textWhite,
                                 padding: EdgeInsets.all(0),
                                 onPressed: () {
-                                  debugPrint("Approve Button Clicked");
+                                  debugPrint("Disapprove Button Clicked");
+                                  _approveDisapprove(context,trans.approve, this.trans.transactionType, trans.id);
                                 },
                               ),
                             ),

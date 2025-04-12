@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -185,5 +187,58 @@ class TransactionAPI {
       );
     }
     return {};
+  }
+
+  static Future<bool> approveDisapprove(BuildContext context, int newstatus, transId) async {
+    try {
+      final response = await ApiHelper.put(
+        context,
+        newstatus == 1
+            ? '/transaction/transaction-approve/$transId'
+            : '/transaction/transaction-disapprove/$transId',
+        data: {
+          'approve': newstatus,
+        },
+      );
+      debugPrint(response.data.toString());
+      if (!context.mounted) return false;
+      if (!response.data['success']) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: response.data['message'],
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+
+      return true;
+    } on DioException catch (e) {
+      debugPrint('Error approving transaction: $e');
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengirim data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => approveDisapprove(context, newstatus, transId),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengirim data",
+        message: "$e",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => approveDisapprove(context, newstatus, transId),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    }
   }
 }
