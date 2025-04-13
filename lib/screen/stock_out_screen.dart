@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:operational_app/api/accounts.dart';
 import 'package:operational_app/api/stock_out.dart';
 import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/format_date.dart';
+import 'package:operational_app/helper/notification.dart';
+import 'package:operational_app/model/account.dart';
 import 'package:operational_app/model/stock_out.dart';
 import 'package:operational_app/notifier/stock_out_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
+import 'package:operational_app/widget/modal_sheet.dart';
 import 'package:operational_app/widget/search_bar.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:provider/provider.dart';
@@ -178,11 +182,197 @@ class _StockOutScreenState extends State<StockOutScreen> {
     _refreshStockOuts();
   }
 
+  Map<String, dynamic> formRepaired = {
+    'weight': 0,
+    'expense': 0,
+    'account_id': null,
+    'id': null,
+  };
+
+  Future<void> _approveRepair(stockOutID) async {
+    await _fetchAccounts();
+    formRepaired['id'] = stockOutID;
+    await modalSheet(
+      context: context,
+      primaryColor: AppColors.pinkPrimary,
+      icon: Icons.error_outline,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text("Selesai perbaikan ?", style: AppTextStyles.labelPink),
+        ],
+      ),
+      message: "Apakah emas telah selesai diperbaiki dan ingin dikembalikan ke barang siap jual ?",
+      inputs: [
+        // Weight
+        TextFormField(
+          initialValue: formRepaired['weight'].toString(),
+          decoration: const InputDecoration(
+            labelText: 'Berat terbaru',
+            hintText: 'Berat terbaru',
+            prefixIcon: Icon(Icons.scale),
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            formRepaired['weight'] = double.tryParse(value) ?? 0;
+          },
+        ),
+        // Expense
+        TextFormField(
+          initialValue: formRepaired['expense'].toString(),
+          decoration: const InputDecoration(
+            labelText: 'Biaya Perbaikan',
+            hintText: 'Biaya Perbaikan',
+            prefixIcon: Icon(Icons.money),
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            formRepaired['expense'] = double.tryParse(value) ?? 0;
+          },
+        ),
+        // Dropdown
+        DropdownButtonFormField(
+          value: formRepaired['account_id'],
+          decoration: const InputDecoration(
+            labelText: 'Akun',
+            hintText: 'Pilih Akun',
+            prefixIcon: Icon(Icons.account_balance),
+          ),
+          isExpanded: true,
+          items: accounts
+                  .map(
+                    (item) => DropdownMenuItem(
+                      value: item.id,
+                      child: Text('${item.code} - ${item.name}', overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
+          onChanged: (value) {
+            formRepaired['account_id'] = value;
+          },
+        ),
+      ],
+      actions: [
+        // Ya
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.pinkPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
+            onPressed: () {
+              _submitRepaired();
+            },
+            child: Text(
+              'Ya',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+        // Batal
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.pinkSecondary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Batal',
+              style: TextStyle(color: Colors.black87),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submitRepaired() async {
+    if (formRepaired['weight'] == 0) {
+        NotificationHelper.showNotificationSheet(
+          context: context, 
+          title: "Perhatian", 
+          message: "Berat tidak boleh kosong", 
+          primaryButtonText: "OK", 
+          onPrimaryPressed: () {
+            context.pop();
+          },
+        );
+        return;
+      }
+      if (formRepaired['account_id'] == null) {
+        NotificationHelper.showNotificationSheet(
+          context: context, 
+          title: "Perhatian", 
+          message: "Silahkan pilih akun", 
+          primaryButtonText: "OK", 
+          onPrimaryPressed: () {
+            context.pop();
+          },
+        );
+        return;
+      }
+      if (formRepaired['expense'] == 0) {
+        NotificationHelper.showNotificationSheet(
+          context: context, 
+          title: "Perhatian", 
+          message: "Biaya tidak boleh kosong", 
+          primaryButtonText: "OK", 
+          onPrimaryPressed: () {
+            context.pop();
+          },
+        );
+        return;
+      }
+      // Approve Repair
+      final res = await StockOutAPI.approveRepair(
+        context,
+        formRepaired,
+      );
+      if (res) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Berhasil",
+          message: "Stock out berhasil diperbaiki",
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {
+            context.pop();
+          },
+        );
+        setState(() {
+          // refresh data
+          stockOuts.removeWhere((so) => so.id == formRepaired['id']);
+          _groupStockOpnames();
+          formRepaired = {'weight': 0, 'expense': 0, 'account_id': null};
+        });
+      }
+  }
+
+  // Fetch Accounts for tukar kurang TODOELLA
+  List<Account> accounts = [];
+  Future<void> _fetchAccounts() async {
+    debugPrint('fetching accounts...');
+    final res = await AccountsApi.fetchAccountFromAPI(context, 
+      accountTypeId: '1',
+    );
+    setState(() {
+      accounts = res;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final actions = context.read<PermissionCubit>().state.actions(
       'inventory/stock-out',
     );
+    debugPrint('Actions: $actions');
     return Scaffold(
       body: CustomScrollView(
         scrollBehavior: const CupertinoScrollBehavior(),
@@ -245,27 +435,56 @@ class _StockOutScreenState extends State<StockOutScreen> {
                                         stockOut.barcode,
                                         style: AppTextStyles.subheadingBlue,
                                       ),
-                                      if (actions.contains('delete'))
-                                        InkWell(
-                                          onTap: () {
-                                            // Delete Stock Out / Cancel
-                                            _unstockOut(stockOut.id);
-                                          },
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              8.0,
-                                            ),
-                                            child: Container(
-                                              color: AppColors.error,
-                                              padding: EdgeInsets.all(8.0),
-                                              child: Icon(
-                                                CupertinoIcons.trash,
-                                                color: Colors.white,
-                                                size: 20,
+                                      Row(
+                                        children: [
+                                          // Delete
+                                          if (actions.contains('delete'))
+                                            InkWell(
+                                              onTap: () {
+                                                // Delete Stock Out / Cancel
+                                                _unstockOut(stockOut.id);
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(
+                                                  8.0,
+                                                ),
+                                                child: Container(
+                                                  color: AppColors.error,
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Icon(
+                                                    CupertinoIcons.trash,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
+                                          // Gap
+                                          if (actions.contains('delete') && stockOut.takenOutReason == 1)
+                                            const SizedBox(width: 8),
+                                          // Approve
+                                          if (stockOut.takenOutReason == 1)
+                                            InkWell(
+                                              onTap: () {
+                                                _approveRepair(stockOut.id);
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(
+                                                  8.0,
+                                                ),
+                                                child: Container(
+                                                  color: AppColors.success,
+                                                  padding: EdgeInsets.all(8.0),
+                                                  child: Icon(
+                                                    CupertinoIcons.checkmark,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                   Divider(),

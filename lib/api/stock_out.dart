@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:operational_app/helper/api.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/stock_out.dart';
@@ -154,6 +155,53 @@ class StockOutAPI {
         message: "$e",
         primaryButtonText: "OK",
         onPrimaryPressed: () => {},
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    }
+  }
+
+  static Future<bool> approveRepair(
+    BuildContext context,
+    formRepaired
+  ) async {
+    try {
+      formRepaired['account_id'] = [formRepaired['account_id']];
+      final response = await ApiHelper.post(
+        context,
+        '/inventory/stock-repaired',
+        data: formRepaired
+      );
+
+      if (!response.data['success']) {
+        throw Exception("Failed to approve repair");
+      }
+      if (!context.mounted) return false;
+      return true;
+    } on DioException catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal melakukan approve repair",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "OK",
+        onPrimaryPressed: () => {
+          context.pop()
+        },
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return false;
+    } on Exception catch (e) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal melakukan approve repair",
+        message: "$e",
+        primaryButtonText: "OK",
+        onPrimaryPressed: () => {
+          context.pop()
+        },
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
