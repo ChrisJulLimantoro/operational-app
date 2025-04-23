@@ -82,6 +82,12 @@ class _HomeScreenState extends State<HomeScreen> {
             "route": "/stock-out",
             "feature": "inventory/stock-out",
           },
+          {
+            "title": "Check Product",
+            "icon": Icons.manage_search,
+            "route": "/check-product",
+            "feature": "inventory/check-product",
+          }
         ],
       },
       {

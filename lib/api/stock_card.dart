@@ -12,10 +12,12 @@ class StockCardAPI {
     String? productID,
     DateTime? dateStart,
     DateTime? dateEnd,
+    String? productCode,
   }) async {
     try {
       final Map<String, dynamic> params = {
         if (productID != null && productID.isNotEmpty) 'product_id': productID,
+        if (productCode != null && productCode.isNotEmpty) 'product_code_code': productCode,
         if (dateStart != null) 'dateStart': dateStart.toIso8601String(),
         if (dateEnd != null) 'dateEnd': dateEnd.toIso8601String(),
       };

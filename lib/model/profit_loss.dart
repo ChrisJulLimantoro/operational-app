@@ -1,13 +1,13 @@
 class PLItem {
   final String name;
-  final int amount;
+  final double amount;
 
   PLItem({required this.name, required this.amount});
 
   factory PLItem.fromJson(Map<String, dynamic> json) {
     return PLItem(
       name: json['name'],
-      amount: json['amount'],
+      amount: (json['amount'] as num).toDouble(),
     );
   }
 }

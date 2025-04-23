@@ -179,4 +179,40 @@ class ProductAPI {
       return null;
     }
   }
+
+  static Future<Map<String, dynamic>?> fetchCheckProduct(
+    BuildContext context,
+    String barcode,
+  ) async {
+    try {
+      final response = await ApiHelper.get(
+        context,
+        '/inventory/check-product/$barcode',
+      );
+      if (!response.data['success']) {
+        return null;
+      }
+      if (!context.mounted) {
+        return null;
+      }
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception("Unexpected response format");
+      }
+      debugPrint('check product pertama ${response.data['data'].toString()} ');
+      return response.data['data'];
+    } on DioException catch (e) {
+      if (!context.mounted) return null;
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal mengambil data",
+        message:
+            "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
+        primaryButtonText: "Retry",
+        onPrimaryPressed: () => fetchCheckProduct(context, barcode),
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+      );
+      return null;
+    }
+  }
 }

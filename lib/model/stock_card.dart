@@ -12,6 +12,7 @@ class StockCard {
   final String weightOut;
   final String balanceWeight;
   final String avgPricePerWeight;
+  final double? price;
 
   StockCard({
     required this.productId,
@@ -27,6 +28,7 @@ class StockCard {
     required this.weightOut,
     required this.balanceWeight,
     required this.avgPricePerWeight,
+    this.price,
   });
 
   factory StockCard.fromJSON(Map<String, dynamic> json) {
@@ -44,6 +46,9 @@ class StockCard {
       weightOut: json['weight_out'] ?? '0',
       balanceWeight: json['balance_weight'] ?? '0',
       avgPricePerWeight: json['avg_price_per_weight'] ?? '0',
+      price: json['price'] != null
+          ? double.tryParse(json['price'].toString())
+          : null,
     );
   }
 }

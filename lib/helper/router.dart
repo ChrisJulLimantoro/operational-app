@@ -30,6 +30,7 @@ import 'package:operational_app/screen/store_screen.dart';
 import 'package:operational_app/screen/profit_loss_screen.dart';
 import 'package:operational_app/screen/stock_mutation_screen.dart';
 import 'package:operational_app/screen/stock_card_screen.dart';
+import 'package:operational_app/screen/check_product_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final isLogin = false;
@@ -114,6 +115,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/stock-out/add',
       builder: (context, state) => const StockOutAddScreen(),
+    ),
+    GoRoute(
+      path: '/check-product',
+      builder: (context, state) => const CheckProductScreen(),
     ),
     GoRoute(
       path: '/sales',
