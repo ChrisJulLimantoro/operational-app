@@ -63,11 +63,23 @@ String formatCustomDate(DateTime date) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // HEADER
-              Text(
-                stockCard.name,
-                style: AppTextStyles.headingBlue,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      stockCard.name,
+                      style: AppTextStyles.headingBlue,
+                      softWrap: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12), // jarak antar teks
+                  Text(
+                    formatCustomDate(stockCard.date),
+                    style: AppTextStyles.headingBlue,
+                    softWrap: true,
+                  ),
+                ],
               ),
               const Divider(),
               // Tanggal Transaksi

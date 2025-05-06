@@ -70,9 +70,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   ];
   List<Account> accounts = [];
   List<Map<String, dynamic>> statuses = [
-    {"id": 1, "value": "Belum Lunas"},
-    {"id": 2, "value": "Lunas"},
-    {"id": 3, "value": "Selesai"},
+    {"id": 0, "value": "Belum Lunas"},
+    {"id": 1, "value": "Lunas"},
+    {"id": 2, "value": "Selesai"},
   ];
   Customer? customer;
   bool isOpen = false;
@@ -804,6 +804,32 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     // Init Date
     dateController.text = "${form['date'].toLocal()}".split(' ')[0];
     form['transaction_type'] = widget.type;
+    if (widget.type == 1) { // sales
+      setState(() {
+        form['status'] = 1;
+        statuses = [
+          {"id": 0, "value": "Belum Lunas"},
+          {"id": 1, "value": "Lunas"},
+          {"id": 2, "value": "Selesai"},
+        ];
+      });
+    } else if (widget.type == 2) { // purchase
+      setState(() {
+        form['status'] = 1;
+        statuses = [
+          {"id": 1, "value": "Lunas"},
+          {"id": 2, "value": "Selesai"},
+        ];
+      });
+    } else if (widget.type == 3) { // trade
+      setState(() {
+        form['status'] = 2;
+        statuses = [
+          {"id": 2, "value": "Selesai"},
+        ];
+      });
+    }
+
     _fetchConfig();
     _fetchAccounts();
     debugPrint('transaction type: ${widget.type}');
@@ -896,7 +922,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                       )
                                       .toList(),
                             ) :
-                            (form['status'] != 1) ? 
+                            ((form['status'] == 1 || form['status'] == 2) && form['total_price'] > 0) ?
                              DropdownButtonFormField( // if tukar kurang (store bayar customer pakai apa)
                               isExpanded: true,
                               decoration: InputDecoration(

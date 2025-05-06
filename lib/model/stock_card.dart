@@ -5,8 +5,8 @@ class StockCard {
   final String code;
   final String name;
   final String description;
-  final int inQty;
-  final int outQty;
+  final double inQty;
+  final double outQty;
   final String balance;
   final String weightIn;
   final String weightOut;
@@ -39,8 +39,8 @@ class StockCard {
       code: json['code'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      inQty: json['in'] ?? 0,
-      outQty: json['out'] ?? 0,
+      inQty: double.tryParse(json['in'].toString()) ?? 0.0,
+      outQty: double.tryParse(json['out'].toString()) ?? 0.0,
       balance: json['balance'] ?? '0',
       weightIn: json['weight_in'] ?? '0',
       weightOut: json['weight_out'] ?? '0',
@@ -51,4 +51,5 @@ class StockCard {
           : null,
     );
   }
+
 }

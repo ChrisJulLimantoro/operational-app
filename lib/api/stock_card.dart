@@ -27,7 +27,7 @@ class StockCardAPI {
         '/finance/stock-card',
         params: params,
       );
-      debugPrint("stock mutation fetch api: ${response.data}");
+      debugPrint("stock card fetch api: ${response.data}");
 
       if (!response.data['success']) return [];
       if (!context.mounted) return [];
