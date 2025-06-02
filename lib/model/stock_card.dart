@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class StockCard {
   final String productId;
   final String? transCode;
@@ -32,6 +34,7 @@ class StockCard {
   });
 
   factory StockCard.fromJSON(Map<String, dynamic> json) {
+    debugPrint("StockCard.fromJSON: $json");
     return StockCard(
       productId: json['product_id'] ?? '',
       transCode: json['trans_code'],
@@ -41,11 +44,11 @@ class StockCard {
       description: json['description'] ?? '',
       inQty: double.tryParse(json['in'].toString()) ?? 0.0,
       outQty: double.tryParse(json['out'].toString()) ?? 0.0,
-      balance: json['balance'] ?? '0',
-      weightIn: json['weight_in'] ?? '0',
-      weightOut: json['weight_out'] ?? '0',
-      balanceWeight: json['balance_weight'] ?? '0',
-      avgPricePerWeight: json['avg_price_per_weight'] ?? '0',
+      balance: (double.tryParse(json['balance'].toString()) ?? 0.0).toString(),
+      weightIn: (double.tryParse(json['weight_in'].toString()) ?? 0.0).toString(),
+      weightOut: (double.tryParse(json['weight_out'].toString()) ?? 0.0).toString(),
+      balanceWeight: (double.tryParse(json['balance_weight'].toString()) ?? 0.0).toString(),
+      avgPricePerWeight: json['unit_price'] ?? '0',
       price: json['price'] != null
           ? double.tryParse(json['price'].toString())
           : null,

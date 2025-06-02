@@ -77,26 +77,26 @@ class _StockOpnameCardState extends State<StockOpnameCard> {
                   Row(
                     children: [
                       // Expandable Status Container
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12, // More padding for dynamic text
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.pinkTertiary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          widget.stockOpname.status == 0
-                              ? "Draft"
-                              : "Done", // This text can expand dynamically
-                          style: AppTextStyles.labelPink,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ), // Space between status and button
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(
+                      //     horizontal: 12, // More padding for dynamic text
+                      //     vertical: 6,
+                      //   ),
+                      //   decoration: BoxDecoration(
+                      //     color: AppColors.pinkTertiary,
+                      //     borderRadius: BorderRadius.circular(8),
+                      //   ),
+                      //   alignment: Alignment.center,
+                      //   child: Text(
+                      //     widget.stockOpname.status == 0
+                      //         ? "Draft"
+                      //         : "Done", // This text can expand dynamically
+                      //     style: AppTextStyles.labelPink,
+                      //   ),
+                      // ),
+                      // const SizedBox(
+                      //   width: 8,
+                      // ), // Space between status and button
                       // Approve/Disapprove Button
                       !widget.stockOpname.approve && actions.contains('approve')
                           ? Container(

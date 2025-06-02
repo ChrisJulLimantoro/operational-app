@@ -34,44 +34,50 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
         InkWell(
           borderRadius: BorderRadius.circular(8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.transactionProduct.productCodeId != ''
-                        ? widget.transactionProduct.name.split(' - ')[1]
-                        : 'Outside Product',
-                    style: AppTextStyles.labelBlue,
-                  ),
-                  Text(
-                    widget.transactionProduct.productCodeId != ''
-                        ? widget.transactionProduct.name.split(' - ')[0]
-                        : '-',
-                    style: AppTextStyles.labelBlueItalic,
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    CurrencyHelper.formatRupiah(
-                      widget.transactionProduct.totalPrice,
+              // Kiri (judul), pakai Expanded supaya dia mengisi sisa ruang
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.transactionProduct.productCodeId != '' && widget.transactionProduct.name.contains(' - ')
+                          ? widget.transactionProduct.name.split(' - ')[1]
+                          : 'Outside Product',
+                      style: AppTextStyles.labelBlue,
                     ),
-                    style: AppTextStyles.labelPink,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: Icon(
-                      isOpen
-                          ? CupertinoIcons.chevron_up
-                          : CupertinoIcons.chevron_down,
+                    Text(
+                      widget.transactionProduct.productCodeId != '' && widget.transactionProduct.name.contains(' - ')
+                          ? widget.transactionProduct.name.split(' - ')[0]
+                          : '-',
+                      style: AppTextStyles.labelBlueItalic,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Kanan (harga + icon), pakai IntrinsicWidth dan ConstrainedBox untuk batasi max lebar teks
+              IntrinsicWidth(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 100), // sesuaikan maxWidth-nya
+                      child: Text(
+                        CurrencyHelper.formatRupiah(widget.transactionProduct.totalPrice),
+                        style: AppTextStyles.labelPink,
+                        softWrap: true,
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isOpen ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
                       color: AppColors.pinkPrimary,
                       size: 20.0,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
