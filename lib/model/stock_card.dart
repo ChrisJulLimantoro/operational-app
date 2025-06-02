@@ -38,7 +38,7 @@ class StockCard {
     return StockCard(
       productId: json['product_id'] ?? '',
       transCode: json['trans_code'],
-      date: DateTime.parse(json['date']),
+      date: DateTime.parse(json['date']).toLocal(),
       code: json['code'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',

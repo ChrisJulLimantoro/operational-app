@@ -9,10 +9,13 @@ import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/notifier/stock_out_notifier.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-void main() {
+void main() async  {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await initializeDateFormatting('id', null);
 
   runApp(
     MultiBlocProvider(

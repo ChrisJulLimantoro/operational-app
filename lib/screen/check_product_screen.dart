@@ -122,11 +122,11 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
     }
     final code = productCode!; // Dart sekarang tahu ini tidak null
     final statusText = switch (code.status) {
-      0 => "Status: In Stock",
-      1 => "Status: Sold",
-      2 => "Status: Bought Back",
-      3 => "Status: Taken Out",
-      _ => "Status: Unknown",
+      0 => "In Stock",
+      1 => "Sold",
+      2 => "Bought Back",
+      3 => "Taken Out",
+      _ => "Unknown",
     };
 
     return Card(
@@ -299,9 +299,15 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
     );
   }
 
+  // String formatDateTime(DateTime dateTime) {
+  //   return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+  // }
   String formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+    final localDateTime = dateTime.toLocal(); // konversi ke lokal
+    final formatter = DateFormat('dd/MM/yyyy HH:mm:ss', 'id');
+    return formatter.format(localDateTime);
   }
+
   String formatCurrency(double price) {
     final formatter = NumberFormat.currency(
       locale: 'id_ID', 
