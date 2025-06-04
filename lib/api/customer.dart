@@ -120,7 +120,7 @@ class CustomerAPI {
         message:
             "${e.response?.data['message'] ?? "Gagal Mengambil data karena jaringan lemah!"}",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchCustomers(context),
+        onPrimaryPressed: () => fetchCustomerByEmail(context, email),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );
@@ -131,7 +131,7 @@ class CustomerAPI {
         title: "Gagal mengambil data",
         message: "$e",
         primaryButtonText: "Retry",
-        onPrimaryPressed: () => fetchCustomers(context),
+        onPrimaryPressed: () => fetchCustomerByEmail(context, email),
         icon: Icons.error_outline,
         primaryColor: AppColors.error,
       );

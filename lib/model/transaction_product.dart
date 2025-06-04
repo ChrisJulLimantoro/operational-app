@@ -8,8 +8,8 @@ class TransactionProduct {
   final double weight;
   final double price;
   final double discount;
-  final double adjustmentPrice;
-  final double totalPrice;
+  double adjustmentPrice;
+  double totalPrice;
   final int status;
   final String comment;
   final bool isBroken;

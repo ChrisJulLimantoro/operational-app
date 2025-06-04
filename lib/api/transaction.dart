@@ -113,6 +113,18 @@ class TransactionAPI {
               .where((to) => to['detail_type'] == 'operation')
               .length;
 
+      if (form['customer_id'] == null || form['customer_id'] == '') {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Silahkan pilih customer terlebih dahulu",
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+          primaryColor: AppColors.error,
+        );
+        return false;
+      }
+
       // for Sales
       if (soldCount == 0 &&
           operationCount == 0 &&
@@ -241,16 +253,18 @@ class TransactionAPI {
     return {};
   }
 
-  static Future<bool> approveDisapprove(BuildContext context, int newstatus, transId) async {
+  static Future<bool> approveDisapprove(
+    BuildContext context,
+    int newstatus,
+    transId,
+  ) async {
     try {
       final response = await ApiHelper.put(
         context,
         newstatus == 1
             ? '/transaction/transaction-approve/$transId'
             : '/transaction/transaction-disapprove/$transId',
-        data: {
-          'approve': newstatus,
-        },
+        data: {'approve': newstatus},
       );
       debugPrint(response.data.toString());
       if (!context.mounted) return false;

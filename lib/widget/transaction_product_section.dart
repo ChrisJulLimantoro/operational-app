@@ -10,7 +10,9 @@ class TransactionProductSection extends StatelessWidget {
   final double totalWeight;
   final double totalPrice;
   final Function(int index)? onRemove;
+  final Function(int index)? onEdit;
   final bool? readonly;
+  final bool isFlex;
 
   const TransactionProductSection({
     super.key,
@@ -19,7 +21,9 @@ class TransactionProductSection extends StatelessWidget {
     required this.totalWeight,
     required this.totalPrice,
     this.onRemove,
+    this.onEdit,
     this.readonly = true,
+    this.isFlex = false,
   });
 
   @override
@@ -43,8 +47,10 @@ class TransactionProductSection extends StatelessWidget {
               (product) => TransactionDetailCard(
                 transactionProduct: product,
                 onRemove: onRemove,
+                onEdit: onEdit,
                 index: products.indexOf(product),
                 readonly: readonly ?? true,
+                isFlex: isFlex,
               ),
             ),
             Divider(),

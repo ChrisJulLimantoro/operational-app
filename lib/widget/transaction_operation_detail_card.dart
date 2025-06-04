@@ -1,22 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:operational_app/model/transaction_product.dart';
+import 'package:operational_app/model/transaction_operation.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:operational_app/helper/format_currency.dart';
 
-class TransactionDetailCard extends StatefulWidget {
-  final TransactionProduct transactionProduct;
+class TransactionOperationDetailCard extends StatefulWidget {
+  final TransactionOperation transactionOperation;
   final Function(int index)? onRemove;
   final Function(int index)? onEdit;
   final int? index;
   final bool readonly;
   final bool isFlex;
 
-  const TransactionDetailCard({
+  const TransactionOperationDetailCard({
     super.key,
-    required this.transactionProduct,
+    required this.transactionOperation,
     this.onRemove,
     this.onEdit,
     this.index,
@@ -25,10 +25,12 @@ class TransactionDetailCard extends StatefulWidget {
   });
 
   @override
-  State<TransactionDetailCard> createState() => _TransactionDetailCardState();
+  State<TransactionOperationDetailCard> createState() =>
+      _TransactionDetailCardState();
 }
 
-class _TransactionDetailCardState extends State<TransactionDetailCard> {
+class _TransactionDetailCardState
+    extends State<TransactionOperationDetailCard> {
   bool isOpen = false;
 
   @override
@@ -45,17 +47,11 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.transactionProduct.productCodeId != '' &&
-                              widget.transactionProduct.name.contains(' - ')
-                          ? widget.transactionProduct.name.split(' - ')[1]
-                          : 'Outside Product',
+                      widget.transactionOperation.name.split(' - ')[1],
                       style: AppTextStyles.labelBlue,
                     ),
                     Text(
-                      widget.transactionProduct.productCodeId != '' &&
-                              widget.transactionProduct.name.contains(' - ')
-                          ? widget.transactionProduct.name.split(' - ')[0]
-                          : '-',
+                      widget.transactionOperation.name.split(' - ')[0],
                       style: AppTextStyles.labelBlueItalic,
                     ),
                   ],
@@ -73,7 +69,7 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                       ), // sesuaikan maxWidth-nya
                       child: Text(
                         CurrencyHelper.formatRupiah(
-                          widget.transactionProduct.totalPrice,
+                          widget.transactionOperation.totalPrice,
                         ),
                         style: AppTextStyles.labelPink,
                         softWrap: true,
@@ -107,40 +103,34 @@ class _TransactionDetailCardState extends State<TransactionDetailCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextCardDetail(
-                    label: 'Berat',
-                    value: '${widget.transactionProduct.weight} g',
+                    label: 'Jumlah',
+                    value: '${widget.transactionOperation.unit} mm',
                     type: "string",
                   ),
                   TextCardDetail(
                     label: 'Jenis',
-                    value: widget.transactionProduct.type,
+                    value: widget.transactionOperation.type,
                     type: "string",
                   ),
                   TextCardDetail(
-                    label: "Harga per gram",
-                    value: widget.transactionProduct.price,
+                    label: "Harga per satuan",
+                    value: widget.transactionOperation.price,
                     type: "currency",
                   ),
                   TextCardDetail(
                     label: "Penyesuaian Harga",
-                    value: widget.transactionProduct.adjustmentPrice,
+                    value: widget.transactionOperation.adjustmentPrice,
                     type: "currency",
                   ),
                   TextCardDetail(
                     label: "Sub Total",
-                    value: widget.transactionProduct.totalPrice,
+                    value: widget.transactionOperation.totalPrice,
                     type: "currency",
                   ),
                   const Divider(),
-                  if (widget.transactionProduct.isBroken)
-                    TextCardDetail(
-                      label: "Kondisi",
-                      value: "Rusak",
-                      type: "string",
-                    ),
                   TextCardDetail(
                     label: "Keterangan",
-                    value: widget.transactionProduct.comment,
+                    value: widget.transactionOperation.comment,
                     type: "string",
                     isLong: true,
                   ),

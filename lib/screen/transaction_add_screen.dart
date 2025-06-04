@@ -6,6 +6,7 @@ import 'package:operational_app/api/customer.dart';
 import 'package:operational_app/api/operation.dart';
 import 'package:operational_app/api/product.dart';
 import 'package:operational_app/api/transaction.dart';
+import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/account.dart';
 import 'package:operational_app/model/customer.dart';
@@ -56,6 +57,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   List<TransactionProduct> itemSold = [];
   List<TransactionProduct> itemBought = [];
   List<TransactionOperation> operations = [];
+  bool isFlex = false;
 
   // Transaction Type
   List<Map<String, dynamic>> transactionType = [
@@ -89,7 +91,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     'total_price': 0.0,
     'paid_amount': 0.0,
     'transaction_type': 1,
-    'account_id' : null,
+    'account_id': null,
   };
   Map<String, dynamic> config = {
     'tax_percent': null,
@@ -445,6 +447,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           double.tryParse(res['fixed_kbl_adjustment']) ?? 0.0;
       config['percent_kbl_adjustment'] =
           double.tryParse(res['percent_kbl_adjustment']) ?? 0.0;
+      isFlex = res['is_flex_price'] || context.read<AuthCubit>().state.isOwner;
     });
   }
 
@@ -695,16 +698,18 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   // Fetch Accounts for tukar kurang TODOELLA
   Future<void> _fetchAccounts() async {
     debugPrint('fetching accounts...');
-    final res = await AccountsApi.fetchAccountFromAPI(context, 
+    final res = await AccountsApi.fetchAccountFromAPI(
+      context,
       accountTypeId: '1',
     );
-    final accountSetting = await AccountsApi.fetchAccountSetting(context, 
+    final accountSetting = await AccountsApi.fetchAccountSetting(
+      context,
       action: 'purchaseCust',
     );
     debugPrint('accountSetting: ${accountSetting.toString()}');
     setState(() {
       accounts = res;
-      if (accountSetting.isNotEmpty ) {
+      if (accountSetting.isNotEmpty) {
         form['account_id'] = accountSetting[0].accountId;
       }
     });
@@ -731,6 +736,211 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     });
   }
 
+  Future<void> _showPromptSoldEdit(int index) async {
+    String adjusted = '';
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Sunting Produk Penjualan',
+                form: Column(
+                  children: [
+                    TextForm(
+                      onChanged: (value) {
+                        adjusted = value;
+                      },
+                      label: 'Penyesuaian Harga',
+                      initialValue: itemSold[index].adjustmentPrice.toString(),
+                      isNumber: true,
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pop(context, {'adjusted': adjusted});
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+    if (result != null) {
+      setState(() {
+        itemSold[index].adjustmentPrice =
+            double.tryParse(result['adjusted']) ?? 0.0;
+        itemSold[index].totalPrice =
+            (itemSold[index].price * itemSold[index].weight) +
+            itemSold[index].adjustmentPrice;
+        _calculate();
+      });
+    }
+  }
+
+  Future<void> _showPromptBoughtEdit(int index) async {
+    String adjusted = '';
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Sunting Produk Pembelian',
+                form: Column(
+                  children: [
+                    TextForm(
+                      onChanged: (value) {
+                        adjusted = value;
+                      },
+                      initialValue:
+                          itemBought[index].adjustmentPrice.toString(),
+                      label: 'Penyesuaian Harga',
+                      isNumber: true,
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pop(context, {'adjusted': adjusted});
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+    if (result != null) {
+      setState(() {
+        itemBought[index].adjustmentPrice =
+            double.tryParse(result['adjusted']) ?? 0.0;
+        itemBought[index].totalPrice =
+            ((itemBought[index].price * itemBought[index].weight) +
+                itemBought[index].adjustmentPrice) *
+            -1;
+        _calculate();
+      });
+    }
+  }
+
+  Future<void> _showPromptOperationEdit(int index) async {
+    String adjusted = '';
+    String jumlah = '';
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Sunting Operasi',
+                form: Column(
+                  spacing: 8,
+                  children: [
+                    TextForm(
+                      onChanged: (value) {
+                        jumlah = value;
+                      },
+                      label: 'Jumlah',
+                      initialValue: operations[index].unit.toString(),
+                      isNumber: true,
+                    ),
+                    TextForm(
+                      onChanged: (value) {
+                        adjusted = value;
+                      },
+                      label: 'Penyesuaian Harga',
+                      initialValue:
+                          operations[index].adjustmentPrice.toString(),
+                      isNumber: true,
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pop(context, {
+                      'jumlah': jumlah,
+                      'adjusted': adjusted,
+                    });
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+    if (result != null) {
+      setState(() {
+        operations[index].unit = double.tryParse(result['jumlah']) ?? 0.0;
+        operations[index].adjustmentPrice =
+            double.tryParse(result['adjusted']) ?? 0.0;
+        operations[index].totalPrice =
+            (operations[index].price * operations[index].unit) +
+            operations[index].adjustmentPrice;
+        _calculate();
+      });
+    }
+  }
+
+  Future<void> _showPromptEditFinal() async {
+    String tax = form['tax_percent'].toString();
+    String adj = form['adjustment_price'].toString();
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isDismissible: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setModalState) => FormSheet(
+                title: 'Sunting Final Value',
+                form: Column(
+                  spacing: 8,
+                  children: [
+                    TextForm(
+                      onChanged: (value) {
+                        tax = value;
+                      },
+                      label: 'Pajak',
+                      initialValue: form['tax_percent'].toString(),
+                      isNumber: true,
+                    ),
+                    TextForm(
+                      onChanged: (value) {
+                        adj = value;
+                      },
+                      label: 'Penyesuaian Harga',
+                      initialValue: form['adjustment_price'].toString(),
+                      isNumber: true,
+                    ),
+                  ],
+                ),
+                onOkPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pop(context, {'tax': tax, 'adj': adj});
+                  });
+                },
+                primaryColor: AppColors.success,
+              ),
+        );
+      },
+    );
+    if (result != null) {
+      setState(() {
+        form['tax_percent'] = double.tryParse(result['tax']) ?? 0.0;
+        config['tax_percent'] = double.tryParse(result['tax']) ?? 0.0;
+        form['adjustment_price'] = double.tryParse(result['adj']) ?? 0.0;
+        _calculate();
+      });
+    }
+  }
+
   void _calculate() {
     double bought = 0;
     double sold = 0;
@@ -751,16 +961,21 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     double adj = 0;
     double subtotal = sold + bought;
     if (widget.type == 3) {
-      if (subtotal + tax >= 0) {
+      if (subtotal >= 0) {
         adj =
-            config['fixed_tt_adjustment'] ??
-            (config['percent_tt_adjustment'] / 100) * subtotal;
+            config['fixed_tt_adjustment'] > 0
+                ? config['fixed_tt_adjustment']
+                : (config['percent_tt_adjustment'] / 100) * subtotal;
       } else {
         adj =
-            config['fixed_kbl_adjustment'] ??
-            (config['percent_kbl_adjustment'] / 100) * subtotal;
+            (config['fixed_kbl_adjustment'] > 0
+                ? config['fixed_kbl_adjustment']
+                : (config['percent_kbl_adjustment'] / 100) * subtotal) *
+            -1;
       }
     }
+
+    tax += adj * (config['tax_percent'] / 100);
 
     setState(() {
       form['sub_total_price'] = subtotal;
@@ -804,7 +1019,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     // Init Date
     dateController.text = "${form['date'].toLocal()}".split(' ')[0];
     form['transaction_type'] = widget.type;
-    if (widget.type == 1) { // sales
+    if (widget.type == 1) {
+      // sales
       setState(() {
         form['status'] = 1;
         statuses = [
@@ -813,7 +1029,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           {"id": 2, "value": "Selesai"},
         ];
       });
-    } else if (widget.type == 2) { // purchase
+    } else if (widget.type == 2) {
+      // purchase
       setState(() {
         form['status'] = 1;
         statuses = [
@@ -821,7 +1038,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           {"id": 2, "value": "Selesai"},
         ];
       });
-    } else if (widget.type == 3) { // trade
+    } else if (widget.type == 3) {
+      // trade
       setState(() {
         form['status'] = 2;
         statuses = [
@@ -899,53 +1117,61 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: 
-                            (form['total_price'] ?? 0) >= 0 ? 
-                            DropdownButtonFormField( // if tukar tambah
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.payment),
-                                labelText: "Jenis Pembayaran",
-                              ),
-                              value: form['payment_method'],
-                              onChanged: (value) {
-                                setState(() {
-                                  form['payment_method'] = value;
-                                });
-                              },
-                              items:
-                                  paymentMethod
-                                      .map(
-                                        (item) => DropdownMenuItem(
-                                          value: item['id'],
-                                          child: Text(item['value']),
-                                        ),
-                                      )
-                                      .toList(),
-                            ) :
-                            ((form['status'] == 1 || form['status'] == 2) && form['total_price'] > 0) ?
-                             DropdownButtonFormField( // if tukar kurang (store bayar customer pakai apa)
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.payment),
-                                labelText: "Account Pembayaran",
-                              ),
-                              value: form['account_id'],
-                              onChanged: (value) {
-                                setState(() {
-                                  form['account_id'] = value;
-                                });
-                              },
-                              items:
-                                  accounts
-                                      .map(
-                                        (item) => DropdownMenuItem(
-                                          value: item.id,
-                                          child: Text('${item.code} - ${item.name}',         overflow: TextOverflow.ellipsis,),
-                                        ),
-                                      )
-                                      .toList(),
-                            )   : null
-                            ,
+                            child:
+                                (form['total_price'] ?? 0) >= 0
+                                    ? DropdownButtonFormField(
+                                      // if tukar tambah
+                                      decoration: InputDecoration(
+                                        icon: Icon(Icons.payment),
+                                        labelText: "Jenis Pembayaran",
+                                      ),
+                                      value: form['payment_method'],
+                                      onChanged: (value) {
+                                        setState(() {
+                                          form['payment_method'] = value;
+                                        });
+                                      },
+                                      items:
+                                          paymentMethod
+                                              .map(
+                                                (item) => DropdownMenuItem(
+                                                  value: item['id'],
+                                                  child: Text(item['value']),
+                                                ),
+                                              )
+                                              .toList(),
+                                    )
+                                    : ((form['status'] == 1 ||
+                                            form['status'] == 2) &&
+                                        form['total_price'] > 0)
+                                    ? DropdownButtonFormField(
+                                      // if tukar kurang (store bayar customer pakai apa)
+                                      isExpanded: true,
+                                      decoration: InputDecoration(
+                                        icon: Icon(Icons.payment),
+                                        labelText: "Account Pembayaran",
+                                      ),
+                                      value: form['account_id'],
+                                      onChanged: (value) {
+                                        setState(() {
+                                          form['account_id'] = value;
+                                        });
+                                      },
+                                      items:
+                                          accounts
+                                              .map(
+                                                (item) => DropdownMenuItem(
+                                                  value: item.id,
+                                                  child: Text(
+                                                    '${item.code} - ${item.name}',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                    )
+                                    : null,
                           ),
                           Container(
                             decoration: BoxDecoration(
@@ -1074,7 +1300,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             previousValue + element.totalPrice,
                       ),
                       onRemove: (index) => cancelProductSold(index),
+                      onEdit: (index) => _showPromptSoldEdit(index),
                       readonly: false,
+                      isFlex: isFlex,
                     ),
                   if (widget.type == 1 || widget.type == 3)
                     Padding(
@@ -1160,7 +1388,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             previousValue + element.totalPrice,
                       ),
                       onRemove: (index) => cancelProductBought(index),
+                      onEdit: (index) => _showPromptBoughtEdit(index),
                       readonly: false,
+                      isFlex: isFlex,
                     ),
                   if (widget.type == 2 || widget.type == 3)
                     Padding(
@@ -1281,7 +1511,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             previousValue + element.totalPrice,
                       ),
                       onRemove: (index) => cancelOperation(index),
+                      onEdit: (index) => _showPromptOperationEdit(index),
                       readonly: false,
+                      isFlex: isFlex,
                     ),
                   if (widget.type == 1 || widget.type == 3)
                     Padding(
@@ -1364,23 +1596,55 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       child: Column(
                         spacing: 6,
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Detail Akhir Transaksi",
+                                style: AppTextStyles.headingBlue,
+                              ),
+                              Spacer(),
+                              if (isFlex)
+                                InkWell(
+                                  onTap: _showPromptEditFinal,
+                                  borderRadius: BorderRadius.circular(
+                                    8,
+                                  ), // Optional: for ripple effect
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.edit,
+                                        color: AppColors.bluePrimary,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        "Edit",
+                                        style: AppTextStyles.labelBlueItalic,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          Divider(),
                           TextCardDetail(
                             label: "Subtotal",
                             value: form['sub_total_price'],
                             type: "currency",
                             textStyle: AppTextStyles.labelPink,
                           ),
-                          if (form['transaction_type'] != 2)
-                            TextCardDetail(
-                              label: "Pajak",
-                              value: form['tax_price'],
-                              type: "currency",
-                              textStyle: AppTextStyles.labelPink,
-                            ),
                           if (form['transaction_type'] == 3)
                             TextCardDetail(
                               label: "Biaya Tukar Tambah",
                               value: form['adjustment_price'],
+                              type: "currency",
+                              textStyle: AppTextStyles.labelPink,
+                            ),
+                          if (form['transaction_type'] != 2)
+                            TextCardDetail(
+                              label: "Pajak (${config['tax_percent']}%)",
+                              value: form['tax_price'],
                               type: "currency",
                               textStyle: AppTextStyles.labelPink,
                             ),

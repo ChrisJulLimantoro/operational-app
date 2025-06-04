@@ -4,10 +4,10 @@ class TransactionOperation {
   final String operationId;
   final String type;
   final String name;
-  final double unit;
+  double unit;
   final double price;
-  final double adjustmentPrice;
-  final double totalPrice;
+  double adjustmentPrice;
+  double totalPrice;
   final String comment;
 
   TransactionOperation({

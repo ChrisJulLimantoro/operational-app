@@ -4,13 +4,16 @@ import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
 import 'package:operational_app/widget/item_card_detail.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
+import 'package:operational_app/widget/transaction_operation_detail_card.dart';
 
 class TransactionOperationSection extends StatelessWidget {
   final String title;
   final List<TransactionOperation> operations;
   final double totalPrice;
   final Function(int index)? onRemove;
+  final Function(int index)? onEdit;
   final bool readonly;
+  final bool isFlex;
 
   const TransactionOperationSection({
     super.key,
@@ -18,7 +21,9 @@ class TransactionOperationSection extends StatelessWidget {
     required this.operations,
     required this.totalPrice,
     this.onRemove,
+    this.onEdit,
     this.readonly = true,
+    this.isFlex = false,
   });
 
   @override
@@ -39,30 +44,13 @@ class TransactionOperationSection extends StatelessWidget {
                 child: Text("Belum ada jasa", style: AppTextStyles.labelPink),
               ),
             ...operations.map(
-              (operation) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ItemCardDetail(
-                          name: operation.name.split(' - ')[1],
-                          code: operation.name.split(' - ')[0],
-                          totalPrice: operation.totalPrice,
-                        ),
-                      ),
-                      if (!readonly)
-                        IconButton(
-                          icon: Icon(Icons.delete, color: AppColors.error),
-                          onPressed: () {
-                            if (onRemove != null) {
-                              onRemove?.call(operations.indexOf(operation));
-                            }
-                          },
-                        ),
-                    ],
-                  ),
-                ],
+              (operation) => TransactionOperationDetailCard(
+                transactionOperation: operation,
+                onRemove: onRemove,
+                onEdit: onEdit,
+                index: operations.indexOf(operation),
+                readonly: readonly,
+                isFlex: isFlex,
               ),
             ),
             Divider(),
