@@ -6,6 +6,7 @@ import 'package:operational_app/model/stock_opname.dart';
 import 'package:operational_app/model/store.dart';
 import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/screen/active_store_screen.dart';
+import 'package:operational_app/screen/bank_account_screen.dart';
 import 'package:operational_app/screen/category_detail_screen.dart';
 import 'package:operational_app/screen/change_password_screen.dart';
 import 'package:operational_app/screen/employee_screen.dart';
@@ -13,6 +14,7 @@ import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
 import 'package:operational_app/screen/company_screen.dart';
 import 'package:operational_app/screen/operation_screen.dart';
+import 'package:operational_app/screen/payout_screen.dart';
 import 'package:operational_app/screen/pdf_viewer_screen.dart';
 import 'package:operational_app/screen/product_detail_screen.dart';
 import 'package:operational_app/screen/product_screen.dart';
@@ -32,6 +34,7 @@ import 'package:operational_app/screen/profit_loss_screen.dart';
 import 'package:operational_app/screen/stock_mutation_screen.dart';
 import 'package:operational_app/screen/stock_card_screen.dart';
 import 'package:operational_app/screen/check_product_screen.dart';
+import 'package:operational_app/screen/voucher_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final isLogin = false;
@@ -175,6 +178,18 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/stock-card',
       builder: (context, state) => const StockCardScreen(),
+    ),
+    GoRoute(
+      path: '/voucher',
+      builder: (context, state) => const VoucherScreen(),
+    ),
+    GoRoute(
+      path: '/bank-account',
+      builder: (context, state) => const BankAccountScreen(),
+    ),
+    GoRoute(
+      path: '/payout',
+      builder: (context, state) => const PayoutScreen(),
     ),
   ],
 );

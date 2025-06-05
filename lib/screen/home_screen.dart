@@ -139,12 +139,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       },
     ],
+    3: [
+      {
+        "group": "Menu Marketplace",
+        "items": [
+          {
+            "title": "Voucher",
+            "icon": Icons.local_offer_outlined,
+            "route": "/voucher",
+            "feature": "marketplace/voucher",
+          },
+          {
+            "title": "Bank Account",
+            "icon": Icons.account_balance_wallet_outlined,
+            "route": "/bank-account",
+            "feature": "marketplace/bank_account",
+          },
+          {
+            "title": "Payout",
+            "icon": Icons.payment,
+            "route": "/payout",
+            "feature": "marketplace/balance",
+          },
+        ],
+      },
+    ]
   };
 
   final List<Color> _tabColors = [
     AppColors.bluePrimary, // Master
     AppColors.pinkPrimary, // Transaksi
     AppColors.pinkPrimary, // Laporan
+    AppColors.pinkPrimary //Marketplace
   ];
 
   void _onItemTapped(int index) {
@@ -315,11 +341,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     )
                                   else
-                                    for (
-                                      var i = 0;
-                                      i < filteredMenu[x]['items'].length;
-                                      i += 3
-                                    )
+                                    for (var i = 0;
+                                        i < filteredMenu[x]['items'].length;
+                                        i += 3)
                                       Padding(
                                         padding: const EdgeInsets.only(
                                           bottom: 24.0,
@@ -364,6 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.white,
           selectedItemColor: _tabColors[_selectedTabIndex],
           unselectedItemColor: Colors.grey,
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.file_open_rounded),
@@ -377,6 +402,10 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.file_download_rounded),
               label: "Laporan",
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.store_mall_directory_outlined),
+              label: "Marketplace",
+            ),
           ],
         ),
       ),
@@ -386,9 +415,9 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Build a menu button
   Widget _buildMenuItem(Map<String, dynamic> item) {
     final condition = context.read<PermissionCubit>().state.hasPermission(
-      item["feature"],
-      'open',
-    );
+          item["feature"],
+          'open',
+        );
     return InkWell(
       onTap: () {
         // Check if the user has permission to access this feature
@@ -403,10 +432,9 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color:
-                  condition
-                      ? _tabColors[_selectedTabIndex]
-                      : Colors.grey.shade600,
+              color: condition
+                  ? _tabColors[_selectedTabIndex]
+                  : Colors.grey.shade600,
               shape: BoxShape.circle,
             ),
             child: Icon(
