@@ -8,7 +8,6 @@ import 'package:operational_app/api/product.dart';
 import 'package:operational_app/api/stock_card.dart';
 import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
-import 'package:operational_app/model/product.dart';
 import 'package:operational_app/model/product_code.dart';
 import 'package:operational_app/model/stock_card.dart';
 import 'package:operational_app/screen/qr_scanner_screen.dart';
@@ -144,10 +143,7 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
               children: [
                 Icon(Icons.info_outline, color: AppColors.pinkSecondary),
                 const SizedBox(width: 8),
-                Text(
-                  "Public Information",
-                  style: AppTextStyles.labelPink,
-                ),
+                Text("Public Information", style: AppTextStyles.labelPink),
               ],
             ),
             // horizontal line
@@ -167,9 +163,7 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     // Status
                     Container(
                       height: 32,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: AppColors.pinkPrimary,
                         borderRadius: BorderRadius.circular(8),
@@ -199,7 +193,10 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Name", style: AppTextStyles.labelPink),
-                      Text(code.product?.name ?? '-', style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.product?.name ?? '-',
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -210,18 +207,24 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Category", style: AppTextStyles.labelPink),
-                      Text(code.product?.category?.name ?? '-', style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.product?.category?.name ?? '-',
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
-                 Expanded(
+                Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 4,
                     children: [
                       Text("SubCategory", style: AppTextStyles.labelPink),
-                      Text(code.product?.type.name ?? '-', style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.product?.type.name ?? '-',
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -241,7 +244,10 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Weight", style: AppTextStyles.labelPink),
-                      Text( code.weight.toString(), style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.weight.toString(),
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -252,7 +258,10 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Price/gram", style: AppTextStyles.labelPink),
-                      Text(code.fixedPrice.toString(), style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.fixedPrice.toString(),
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -263,7 +272,10 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Store", style: AppTextStyles.labelPink),
-                      Text(code.product?.store?.name ?? '-', style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.product?.store?.name ?? '-',
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -283,14 +295,15 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                     spacing: 4,
                     children: [
                       Text("Company", style: AppTextStyles.labelPink),
-                      Text(code.product?.store?.company?.name ?? '-', style: AppTextStyles.bodyBlue),
+                      Text(
+                        code.product?.store?.company?.name ?? '-',
+                        style: AppTextStyles.bodyBlue,
+                      ),
                     ],
                   ),
                 ),
                 // empty expaned
-                const Expanded(
-                  child: SizedBox(),
-                ),
+                const Expanded(child: SizedBox()),
               ],
             ),
           ],
@@ -310,13 +323,12 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
 
   String formatCurrency(double price) {
     final formatter = NumberFormat.currency(
-      locale: 'id_ID', 
-      symbol: 'Rp. ', 
+      locale: 'id_ID',
+      symbol: 'Rp. ',
       decimalDigits: 2, // untuk dua angka di belakang koma
     );
     return formatter.format(price);
   }
-
 
   Widget productHistoryDetail() {
     return Card(
@@ -334,19 +346,21 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
               children: [
                 Icon(Icons.info_outline, color: AppColors.pinkSecondary),
                 const SizedBox(width: 8),
-                Text(
-                  "Mutation Information",
-                  style: AppTextStyles.labelPink,
-                ),
+                Text("Mutation Information", style: AppTextStyles.labelPink),
               ],
             ),
             // horizontal line
             const Divider(color: Colors.grey, thickness: 1),
             // map through stock cards
-            for (var stockCard in stockCards)...[
+            for (var stockCard in stockCards) ...[
               Row(
                 children: [
-                  Expanded(child: Text( formatDateTime(stockCard.date), style: AppTextStyles.subheadingBlue)),
+                  Expanded(
+                    child: Text(
+                      formatDateTime(stockCard.date),
+                      style: AppTextStyles.subheadingBlue,
+                    ),
+                  ),
                 ],
               ),
               Row(
@@ -361,7 +375,10 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                       spacing: 4,
                       children: [
                         Text("Description", style: AppTextStyles.labelPink),
-                        Text(stockCard.description, style: AppTextStyles.bodyBlue),
+                        Text(
+                          stockCard.description,
+                          style: AppTextStyles.bodyBlue,
+                        ),
                       ],
                     ),
                   ),
@@ -374,15 +391,23 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                         Text("Gram", style: AppTextStyles.labelPink),
                         Container(
                           width: 80,
-                          padding: EdgeInsets.symmetric(vertical: 3, horizontal: 3), // Padding di sekitar teks
+                          padding: EdgeInsets.symmetric(
+                            vertical: 3,
+                            horizontal: 3,
+                          ), // Padding di sekitar teks
                           decoration: BoxDecoration(
-                            color: double.tryParse(stockCard.weightIn) != null && double.tryParse(stockCard.weightIn)! > 0
-                                ? AppColors.success
-                                : AppColors.error, // Background color
-                            borderRadius: BorderRadius.circular(12), // Menambahkan border radius (melengkung)
+                            color:
+                                double.tryParse(stockCard.weightIn) != null &&
+                                        double.tryParse(stockCard.weightIn)! > 0
+                                    ? AppColors.success
+                                    : AppColors.error, // Background color
+                            borderRadius: BorderRadius.circular(
+                              12,
+                            ), // Menambahkan border radius (melengkung)
                           ),
                           child: Text(
-                            double.tryParse(stockCard.weightIn) != null && double.tryParse(stockCard.weightIn)! > 0
+                            double.tryParse(stockCard.weightIn) != null &&
+                                    double.tryParse(stockCard.weightIn)! > 0
                                 ? stockCard.weightIn
                                 : '-${stockCard.weightOut}',
                             style: AppTextStyles.bodyWhite.copyWith(
@@ -392,9 +417,6 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                             textAlign: TextAlign.center,
                           ),
                         ),
-
-
-
                       ],
                     ),
                   ),
@@ -404,8 +426,14 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 4,
                       children: [
-                        Text("Buy / Sold Price", style: AppTextStyles.labelPink),
-                        Text( formatCurrency(stockCard.price ?? 0), style: AppTextStyles.bodyBlue),
+                        Text(
+                          "Buy / Sold Price",
+                          style: AppTextStyles.labelPink,
+                        ),
+                        Text(
+                          formatCurrency(stockCard.price ?? 0),
+                          style: AppTextStyles.bodyBlue,
+                        ),
                       ],
                     ),
                   ),
@@ -413,7 +441,7 @@ class _CheckProductScreenState extends State<CheckProductScreen> {
               ),
               // jarak antar next baris
               const SizedBox(height: 10),
-            ]
+            ],
           ],
         ),
       ),

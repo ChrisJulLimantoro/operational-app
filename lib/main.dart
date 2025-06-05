@@ -4,6 +4,7 @@ import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/bloc/permission_bloc.dart';
 import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/helper/router.dart';
+import 'package:operational_app/notifier/detail_notifier.dart';
 import 'package:operational_app/notifier/sales_notifier.dart';
 import 'package:operational_app/notifier/stock_opname_notifier.dart';
 import 'package:operational_app/notifier/stock_out_notifier.dart';
@@ -12,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-void main() async  {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeDateFormatting('id', null);
@@ -27,6 +28,7 @@ void main() async  {
         ChangeNotifierProvider(create: (context) => StockOpnameNotifier()),
         ChangeNotifierProvider(create: (context) => StockOutNotifier()),
         ChangeNotifierProvider(create: (context) => SalesNotifier()),
+        ChangeNotifierProvider(create: (context) => DetailNotifier()),
       ],
       child: MyApp(),
     ),

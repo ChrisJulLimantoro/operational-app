@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/api/accounts.dart';
 import 'package:operational_app/api/category.dart';
-import 'package:operational_app/api/customer.dart';
 import 'package:operational_app/api/operation.dart';
 import 'package:operational_app/api/product.dart';
 import 'package:operational_app/api/transaction.dart';
@@ -11,13 +10,14 @@ import 'package:operational_app/helper/notification.dart';
 import 'package:operational_app/model/account.dart';
 import 'package:operational_app/model/customer.dart';
 import 'package:operational_app/model/operation.dart';
+import 'package:operational_app/model/transaction.dart';
 import 'package:operational_app/model/transaction_operation.dart';
 import 'package:operational_app/model/transaction_product.dart';
+import 'package:operational_app/notifier/detail_notifier.dart';
 import 'package:operational_app/notifier/sales_notifier.dart';
 import 'package:operational_app/screen/qr_scanner_screen.dart';
 import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
-import 'package:operational_app/widget/email_form.dart';
 import 'package:operational_app/widget/form_sheet.dart';
 import 'package:operational_app/widget/selection_form.dart';
 import 'package:operational_app/widget/text_form.dart';
@@ -26,33 +26,17 @@ import 'package:operational_app/widget/transaction_operation_section.dart';
 import 'package:operational_app/widget/transaction_product_section.dart';
 import 'package:provider/provider.dart';
 
-class TransactionAddScreen extends StatefulWidget {
-  final int type;
-  const TransactionAddScreen({super.key, this.type = 1});
+class TransactionEditScreen extends StatefulWidget {
+  final Transaction transaction;
+  const TransactionEditScreen({super.key, required this.transaction});
 
   @override
-  State<TransactionAddScreen> createState() => _TransactionAddScreenState();
+  State<TransactionEditScreen> createState() => _TransactionEditScreenState();
 }
 
-class _TransactionAddScreenState extends State<TransactionAddScreen> {
+class _TransactionEditScreenState extends State<TransactionEditScreen> {
   // DatePicker Functionality
   final TextEditingController dateController = TextEditingController();
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null) {
-      dateController.text = "${picked.toLocal()}".split(' ')[0];
-      setState(() {
-        form['date'] = picked;
-      });
-    }
-  }
-
   // Transaction Details
   List<TransactionProduct> itemSold = [];
   List<TransactionProduct> itemBought = [];
@@ -108,9 +92,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     );
     if (scanned == null) return;
 
-    if (type == 'customer') {
-      await _fetchCustomer(scanned);
-    } else if (type == 'product_sold') {
+    if (type == 'product_sold') {
       await _fetchProductSold(scanned.split(';')[0]);
     } else if (type == 'product_bought') {
       final data = {'barcode': scanned.split(';')[0]};
@@ -157,44 +139,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       await _fetchProductBought(data);
     } else if (type == 'operation') {
       await _fetchOperation(scanned.split(';')[1]);
-    }
-  }
-
-  // Open Prompt to Insert Customer email
-  Future<void> _showPromptCustomer() async {
-    String scannedEmail = '';
-    final scanned = await showModalBottomSheet(
-      context: context,
-      isDismissible: true, // Allows dismissing by tapping outside
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      builder:
-          (context) => FormSheet(
-            title: 'Cari Pelanggan',
-            form: EmailForm(
-              onChanged: (value) {
-                scannedEmail = value; // Update email value
-              },
-            ),
-            onOkPressed: () {
-              Navigator.pop(context, scannedEmail);
-            },
-            primaryColor: AppColors.success,
-          ),
-    );
-    if (scanned != null) {
-      if (scannedEmail.isEmpty) {
-        NotificationHelper.showNotificationSheet(
-          context: context,
-          title: "Gagal",
-          message: "Email tidak valid",
-          icon: Icons.error_outline,
-          primaryColor: AppColors.error,
-          primaryButtonText: "OK",
-          onPrimaryPressed: () {},
-        );
-        return;
-      }
-      await _fetchCustomerByEmail(scannedEmail);
     }
   }
 
@@ -448,46 +392,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     });
   }
 
-  // Fetch Customer by ID
-  Future<void> _fetchCustomer(String id) async {
-    final cust = await CustomerAPI.fetchCustomer(context, id);
-    if (cust != null) {
-      setState(() {
-        form['customer_id'] = cust.id;
-        customer = cust;
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Customer ditemukan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
-      );
-    }
-  }
-
-  // Fetch Customer by ID
-  Future<void> _fetchCustomerByEmail(String email) async {
-    final cust = await CustomerAPI.fetchCustomerByEmail(context, email);
-    if (cust != null) {
-      setState(() {
-        form['customer_id'] = cust.id;
-        customer = cust;
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Customer ditemukan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
-      );
-    }
-  }
-
   // Fetch Product by barcode
   Future<void> _fetchProductSold(String barcode) async {
     // Fetch Product sold by ID
@@ -521,7 +425,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       }
       TransactionProduct tp = TransactionProduct(
         id: '',
-        transactionId: '',
+        transactionId: widget.transaction.id,
         productCodeId: prod['id'],
         transactionType: 1,
         name: prod['name'],
@@ -534,19 +438,52 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         status: 1,
         discount: 0.0,
       );
-      setState(() {
-        itemSold.add(tp);
-        _calculate();
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Produk Berhasil didaftarkan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
+      // Called to create the new transaction detail
+      Map<String, dynamic> insert = {
+        'transaction_id': widget.transaction.id,
+        'detail_type': 'product',
+        'product_code_id': tp.productCodeId,
+        'type': tp.type,
+        'name': tp.name,
+        'price': tp.price,
+        'quantity': tp.weight,
+        'weight': tp.weight,
+        'uom': 'gram',
+        'adjustment_price': 0.0,
+        'total_price': tp.totalPrice,
+        'transaction_type': 1,
+        'discount': 0,
+      };
+      final result = await TransactionAPI.createTransactionDetail(
+        context,
+        insert,
       );
+      if (result['success']) {
+        tp.id = result['data']['id'] ?? '';
+        setState(() {
+          itemSold.add(tp);
+          _calculate();
+        });
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Berhasil",
+          message: "Operasi berhasil didaftarkan",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Operasi Gagal Didaftarkan",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      }
     }
   }
 
@@ -571,7 +508,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         );
         return;
       }
-      if (itemSold
+      if (itemBought
           .where((element) => element.productCodeId == prod['id'])
           .isNotEmpty) {
         NotificationHelper.showNotificationSheet(
@@ -587,7 +524,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       }
       TransactionProduct tp = TransactionProduct(
         id: '',
-        transactionId: '',
+        transactionId: widget.transaction.id,
         productCodeId: prod['id'],
         transactionType: 2,
         name: prod['name'],
@@ -604,19 +541,53 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         discount: 0.0,
         isBroken: prod['is_broken'],
       );
-      setState(() {
-        itemBought.add(tp);
-        _calculate();
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Produk berhasil didaftarkan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
+      // Called to create the new transaction detail
+      Map<String, dynamic> insert = {
+        'transaction_id': widget.transaction.id,
+        'detail_type': 'product',
+        'product_code_id': tp.productCodeId,
+        'type': tp.type,
+        'name': tp.name,
+        'price': tp.price,
+        'quantity': tp.weight,
+        'weight': tp.weight,
+        'uom': 'gram',
+        'adjustment_price': 0.0,
+        'total_price': tp.totalPrice,
+        'transaction_type': 2,
+        'discount': 0,
+        'is_broken': tp.isBroken,
+      };
+      final result = await TransactionAPI.createTransactionDetail(
+        context,
+        insert,
       );
+      if (result['success']) {
+        tp.id = result['data']['id'] ?? '';
+        setState(() {
+          itemBought.add(tp);
+          _calculate();
+        });
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Berhasil",
+          message: "Operasi berhasil didaftarkan",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Operasi Gagal Didaftarkan",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      }
     }
   }
 
@@ -626,7 +597,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (prod != null) {
       TransactionProduct tp = TransactionProduct(
         id: '',
-        transactionId: '',
+        transactionId: widget.transaction.id,
         productCodeId: prod['id'] ?? '',
         transactionType: 2,
         name: prod['name'],
@@ -643,19 +614,53 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         discount: 0.0,
         isBroken: prod['is_broken'],
       );
-      setState(() {
-        itemBought.add(tp);
-        _calculate();
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Produk dari luar toko berhasil didaftarkan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
+      // Called to create the new transaction detail
+      Map<String, dynamic> insert = {
+        'transaction_id': widget.transaction.id,
+        'detail_type': 'product',
+        'product_code_id': null,
+        'type': tp.type,
+        'name': tp.name,
+        'price': tp.price,
+        'quantity': tp.weight,
+        'weight': tp.weight,
+        'uom': 'gram',
+        'adjustment_price': 0.0,
+        'total_price': tp.totalPrice,
+        'transaction_type': 2,
+        'discount': 0,
+        'is_broken': tp.isBroken,
+      };
+      final result = await TransactionAPI.createTransactionDetail(
+        context,
+        insert,
       );
+      if (result['success']) {
+        tp.id = result['data']['id'] ?? '';
+        setState(() {
+          itemBought.add(tp);
+          _calculate();
+        });
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Berhasil",
+          message: "Operasi berhasil didaftarkan",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Operasi Gagal Didaftarkan",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      }
     }
   }
 
@@ -666,7 +671,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     if (op != null) {
       TransactionOperation to = TransactionOperation(
         id: '',
-        transactionId: '',
+        transactionId: widget.transaction.id,
         operationId: op.id,
         name: '${op.code} - ${op.name}',
         unit: 1,
@@ -676,19 +681,51 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         totalPrice: op.price,
         comment: "",
       );
-      setState(() {
-        operations.add(to);
-        _calculate();
-      });
-      NotificationHelper.showNotificationSheet(
-        context: context,
-        title: "Berhasil",
-        message: "Operasi berhasil didaftarkan",
-        icon: Icons.check_circle_outline,
-        primaryColor: AppColors.success,
-        primaryButtonText: "OK",
-        onPrimaryPressed: () {},
+      // Insert new Transaction Details
+      Map<String, dynamic> insert = {
+        'transaction_id': widget.transaction.id,
+        'detail_type': 'operation',
+        'operation_id': op.id,
+        'type': 'Operation',
+        'name': '${op.code} - ${op.name}',
+        'price': op.price,
+        'quantity': 1,
+        'unit': 1,
+        'uom': op.uom,
+        'adjustment_price': 0.0,
+        'total_price': op.price,
+        'transaction_type': 1,
+      };
+      final result = await TransactionAPI.createTransactionDetail(
+        context,
+        insert,
       );
+      if (result['success']) {
+        to.id = result['data']['id'] ?? '';
+        setState(() {
+          operations.add(to);
+          _calculate();
+        });
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Berhasil",
+          message: "Operasi berhasil didaftarkan",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      } else {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Gagal",
+          message: "Operasi Gagal Didaftarkan",
+          icon: Icons.error_outline,
+          primaryColor: AppColors.error,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+      }
     }
   }
 
@@ -712,25 +749,99 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     });
   }
 
-  void cancelProductSold(int index) {
-    setState(() {
-      itemSold.removeAt(index);
-      _calculate();
-    });
+  void cancelProductSold(int index) async {
+    // Delete the transaction Detail
+    final id = itemSold[index].id;
+    final res = await TransactionAPI.deleteTransactionDetail(context, id);
+    if (res) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Sukses",
+        message: "Produk berhasil dihapus",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+      setState(() {
+        itemSold.removeAt(index);
+        _calculate();
+      });
+    } else {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message:
+            "Gagal menghapus produk, karena telah digunakan pada transaksi lain.",
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+    }
   }
 
-  void cancelProductBought(int index) {
-    setState(() {
-      itemBought.removeAt(index);
-      _calculate();
-    });
+  void cancelProductBought(int index) async {
+    // Delete the transaction Detail
+    final id = itemBought[index].id;
+    final res = await TransactionAPI.deleteTransactionDetail(context, id);
+    if (res) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Sukses",
+        message: "Produk berhasil dihapus",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+      setState(() {
+        itemBought.removeAt(index);
+        _calculate();
+      });
+    } else {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message:
+            "Gagal menghapus produk, karena telah digunakan pada transaksi lain.",
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+    }
   }
 
-  void cancelOperation(int index) {
-    setState(() {
-      operations.removeAt(index);
-      _calculate();
-    });
+  void cancelOperation(int index) async {
+    // Delete the transaction Detail
+    final id = operations[index].id;
+    final res = await TransactionAPI.deleteTransactionDetail(context, id);
+    if (res) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Sukses",
+        message: "Operasi berhasil dihapus",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+      setState(() {
+        operations.removeAt(index);
+        _calculate();
+      });
+    } else {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Gagal",
+        message: "Gagal menghapus operasi.",
+        icon: Icons.error_outline,
+        primaryColor: AppColors.error,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
+    }
   }
 
   Future<void> _showPromptSoldEdit(int index) async {
@@ -767,14 +878,37 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       },
     );
     if (result != null) {
-      setState(() {
-        itemSold[index].adjustmentPrice =
-            double.tryParse(result['adjusted']) ?? 0.0;
-        itemSold[index].totalPrice =
-            (itemSold[index].price * itemSold[index].weight) +
-            itemSold[index].adjustmentPrice;
-        _calculate();
-      });
+      // Update it to the backend
+      Map<String, dynamic> map = TransactionProduct.toJSON(itemSold[index]);
+      map['adjustment_price'] = double.tryParse(result['adjusted']) ?? 0.0;
+      map['total_price'] =
+          (itemSold[index].price * itemSold[index].weight) +
+          itemSold[index].adjustmentPrice;
+      debugPrint('Map Editted ${map['id']}');
+      final response = await TransactionAPI.updateTransactionDetail(
+        context,
+        map['id'],
+        map,
+      );
+      if (response) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Sukses",
+          message: "Berhasil melakukan perubahan.",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        setState(() {
+          itemSold[index].adjustmentPrice =
+              double.tryParse(result['adjusted']) ?? 0.0;
+          itemSold[index].totalPrice =
+              (itemSold[index].price * itemSold[index].weight) +
+              itemSold[index].adjustmentPrice;
+          _calculate();
+        });
+      }
     }
   }
 
@@ -813,15 +947,37 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       },
     );
     if (result != null) {
-      setState(() {
-        itemBought[index].adjustmentPrice =
-            double.tryParse(result['adjusted']) ?? 0.0;
-        itemBought[index].totalPrice =
-            ((itemBought[index].price * itemBought[index].weight) +
-                itemBought[index].adjustmentPrice) *
-            -1;
-        _calculate();
-      });
+      Map<String, dynamic> map = TransactionProduct.toJSON(itemBought[index]);
+      map['adjustment_price'] = double.tryParse(result['adjusted']) ?? 0.0;
+      map['total_price'] =
+          (itemBought[index].price * itemBought[index].weight) +
+          itemBought[index].adjustmentPrice;
+
+      final response = await TransactionAPI.updateTransactionDetail(
+        context,
+        map['id'],
+        map,
+      );
+      if (response) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Sukses",
+          message: "Berhasil melakukan perubahan.",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        setState(() {
+          itemBought[index].adjustmentPrice =
+              double.tryParse(result['adjusted']) ?? 0.0;
+          itemBought[index].totalPrice =
+              ((itemBought[index].price * itemBought[index].weight) +
+                  itemBought[index].adjustmentPrice) *
+              -1;
+          _calculate();
+        });
+      }
     }
   }
 
@@ -873,15 +1029,37 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       },
     );
     if (result != null) {
-      setState(() {
-        operations[index].unit = double.tryParse(result['jumlah']) ?? 0.0;
-        operations[index].adjustmentPrice =
-            double.tryParse(result['adjusted']) ?? 0.0;
-        operations[index].totalPrice =
-            (operations[index].price * operations[index].unit) +
-            operations[index].adjustmentPrice;
-        _calculate();
-      });
+      Map<String, dynamic> map = TransactionOperation.toJSON(operations[index]);
+      map['adjustment_price'] = double.tryParse(result['adjusted']) ?? 0.0;
+      map['total_price'] =
+          (operations[index].price * operations[index].unit) +
+          operations[index].adjustmentPrice;
+
+      final response = await TransactionAPI.updateTransactionDetail(
+        context,
+        map['id'],
+        map,
+      );
+      if (response) {
+        NotificationHelper.showNotificationSheet(
+          context: context,
+          title: "Sukses",
+          message: "Berhasil melakukan perubahan.",
+          icon: Icons.check_circle_outline,
+          primaryColor: AppColors.success,
+          primaryButtonText: "OK",
+          onPrimaryPressed: () {},
+        );
+        setState(() {
+          operations[index].unit = double.tryParse(result['jumlah']) ?? 0.0;
+          operations[index].adjustmentPrice =
+              double.tryParse(result['adjusted']) ?? 0.0;
+          operations[index].totalPrice =
+              (operations[index].price * operations[index].unit) +
+              operations[index].adjustmentPrice;
+          _calculate();
+        });
+      }
     }
   }
 
@@ -908,7 +1086,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       initialValue: form['tax_percent'].toString(),
                       isNumber: true,
                     ),
-                    if (widget.type == 3) // Tukar Tambah
+                    if (widget.transaction.transactionType == 3) // Tukar Tambah
                       TextForm(
                         onChanged: (value) {
                           adj = value;
@@ -930,6 +1108,15 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       },
     );
     if (result != null) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: "Sukses",
+        message: "Berhasil melakukan perubahan.",
+        icon: Icons.check_circle_outline,
+        primaryColor: AppColors.success,
+        primaryButtonText: "OK",
+        onPrimaryPressed: () {},
+      );
       setState(() {
         form['tax_percent'] = double.tryParse(result['tax']) ?? 0.0;
         config['tax_percent'] = double.tryParse(result['tax']) ?? 0.0;
@@ -958,7 +1145,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
 
     double adj = 0;
     double subtotal = sold + bought;
-    if (widget.type == 3) {
+    if (widget.transaction.transactionType == 3) {
       if (subtotal >= 0) {
         adj =
             config['fixed_tt_adjustment'] > 0
@@ -983,6 +1170,9 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
           subtotal + tax + adj; // Total Price = Subtotal + Tax + Adjustment
       form['paid_amount'] = form['total_price'];
     });
+    // Update Detail Transaksi
+    Provider.of<DetailNotifier>(context, listen: false).markForRefresh();
+    Provider.of<SalesNotifier>(context, listen: false).markForRefresh();
   }
 
   Future<void> _submit() async {
@@ -993,17 +1183,22 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
       ...operations.map((item) => TransactionOperation.toJSON(item)),
     ];
     debugPrint('form: ${form.toString()}');
-    final response = await TransactionAPI.submitTransaction(context, form);
+    final response = await TransactionAPI.updateTransaction(
+      context,
+      widget.transaction.id,
+      form,
+    );
     debugPrint(response.toString());
     if (response) {
       NotificationHelper.showNotificationSheet(
         context: context,
         title: "Berhasil",
-        message: "Transaksi berhasil disimpan",
+        message: "Transaksi berhasil diperbarui.",
         icon: Icons.check_circle_outline,
         primaryColor: AppColors.success,
         primaryButtonText: "OK",
         onPrimaryPressed: () {
+          Provider.of<DetailNotifier>(context, listen: false).markForRefresh();
           Provider.of<SalesNotifier>(context, listen: false).markForRefresh();
           context.pop();
         },
@@ -1015,50 +1210,36 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
   void initState() {
     super.initState();
     // Init Date
+    form = {
+      'date': widget.transaction.date,
+      'customer_id': widget.transaction.customer?.id,
+      'payment_method': widget.transaction.paymentMethod,
+      'status': widget.transaction.status,
+      'sub_total_price': widget.transaction.subTotalPrice,
+      'tax_price': widget.transaction.taxPrice,
+      'adjustment_price': widget.transaction.adjustmentPrice,
+      'total_price': widget.transaction.totalPrice,
+      'paid_amount': widget.transaction.paidAmount,
+      'transaction_type': widget.transaction.transactionType,
+      'account_id': widget.transaction.accountId,
+      'employee_id': widget.transaction.employee?.id ?? '',
+      'store_id': widget.transaction.storeId,
+    };
+
+    itemBought =
+        widget.transaction.transactionProducts
+            .where((item) => item.transactionType == 2)
+            .toList();
+    itemSold =
+        widget.transaction.transactionProducts
+            .where((item) => item.transactionType == 1)
+            .toList();
+    operations = widget.transaction.transactionOperations;
     dateController.text = "${form['date'].toLocal()}".split(' ')[0];
-    form['transaction_type'] = widget.type;
-    if (widget.type == 1) {
-      // sales
-      setState(() {
-        form['status'] = 1;
-        statuses = [
-          {"id": 0, "value": "Belum Lunas"},
-          {"id": 1, "value": "Lunas"},
-          {"id": 2, "value": "Selesai"},
-        ];
-      });
-    } else if (widget.type == 2) {
-      // purchase
-      setState(() {
-        form['status'] = 1;
-        statuses = [
-          {"id": 1, "value": "Lunas"},
-          {"id": 2, "value": "Selesai"},
-        ];
-      });
-    } else if (widget.type == 3) {
-      // trade
-      setState(() {
-        form['status'] = 2;
-        statuses = [
-          {"id": 2, "value": "Selesai"},
-        ];
-      });
-    }
+    customer = widget.transaction.customer;
 
     _fetchConfig();
     _fetchAccounts();
-    debugPrint('transaction type: ${widget.type}');
-    // Initialize items Details
-    // itemSold =
-    //     widget.transaction.transactionProducts
-    //         .where((item) => item.transactionType == 1)
-    //         .toList();
-    // itemBought =
-    //     widget.transaction.transactionProducts
-    //         .where((item) => item.transactionType == 2)
-    //         .toList();
-    // operations = widget.transaction.transactionOperations;
   }
 
   @override
@@ -1068,7 +1249,10 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         slivers: [
           SliverAppBar(
             pinned: true,
-            title: Text("Transaksi Baru", style: AppTextStyles.headingWhite),
+            title: Text(
+              "${widget.transaction.code}",
+              style: AppTextStyles.headingWhite,
+            ),
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -1097,20 +1281,44 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                             style: AppTextStyles.headingBlue,
                           ),
                           Divider(),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: TextField(
-                              controller: dateController,
-                              readOnly: true, // Prevent manual input
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.calendar_today),
-                                labelText: "Tanggal Transaksi",
-                              ),
-                              onTap: () => _selectDate(context),
-                            ),
+                          TextCardDetail(
+                            label: "Kode Transaksi",
+                            value: widget.transaction.code,
+                            type: "text",
                           ),
+                          TextCardDetail(
+                            label: 'Tanggal',
+                            value: form['date'],
+                            type: "date",
+                          ),
+                          TextCardDetail(
+                            label: "Jenis",
+                            value:
+                                transactionType
+                                    .where(
+                                      (trans) =>
+                                          trans['id'] ==
+                                          widget.transaction.transactionType,
+                                    )
+                                    .first['value'],
+                            type: "text",
+                          ),
+                          TextCardDetail(
+                            label: "Sales",
+                            value: widget.transaction.employee?.name ?? "-",
+                            type: "text",
+                          ),
+                          TextCardDetail(
+                            label: "Customer",
+                            value: customer?.name ?? "-",
+                            type: "text",
+                          ),
+                          TextCardDetail(
+                            label: "Customer Email",
+                            value: customer?.email ?? "-",
+                            type: "text",
+                          ),
+                          Divider(),
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
@@ -1201,89 +1409,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       ),
                     ),
                   ),
-                  Card(
-                    color: Colors.white,
-                    elevation: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 20,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 8,
-                        children: [
-                          Text(
-                            "Detail Pelanggan",
-                            style: AppTextStyles.headingBlue,
-                          ),
-                          Divider(),
-                          TextCardDetail(
-                            label: "Nama",
-                            value: customer?.name ?? "-",
-                            type: "text",
-                          ),
-                          TextCardDetail(
-                            label: "Email",
-                            value: customer?.email ?? "-",
-                            type: "text",
-                          ),
-                          TextCardDetail(
-                            label: "No Telepon",
-                            value: customer?.phone ?? "-",
-                            type: "text",
-                          ),
-                          Divider(),
-
-                          InkWell(
-                            onTap: () async {
-                              // Scan QR Code to get customer ID
-                              _qrScan('customer');
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Container(
-                                width: double.infinity,
-                                color: AppColors.pinkPrimary,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12.0,
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  "Scan QR Customer",
-                                  style: AppTextStyles.labelWhite,
-                                ),
-                              ),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              // Scan QR Code to get customer ID
-                              _showPromptCustomer();
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Container(
-                                width: double.infinity,
-                                color: AppColors.bluePrimary,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12.0,
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  "Cari Email Customer",
-                                  style: AppTextStyles.labelWhite,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  if (widget.type == 1 || widget.type == 3)
+                  if (widget.transaction.transactionType == 1 ||
+                      widget.transaction.transactionType == 3)
                     TransactionProductSection(
                       title: "Detail Penjualan",
                       products: itemSold,
@@ -1302,7 +1429,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       readonly: false,
                       isFlex: isFlex,
                     ),
-                  if (widget.type == 1 || widget.type == 3)
+                  if (widget.transaction.transactionType == 1 ||
+                      widget.transaction.transactionType == 3)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: Row(
@@ -1371,7 +1499,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         ],
                       ),
                     ),
-                  if (widget.type == 2 || widget.type == 3)
+                  if (widget.transaction.transactionType == 2 ||
+                      widget.transaction.transactionType == 3)
                     TransactionProductSection(
                       title: "Detail Pembelian",
                       products: itemBought,
@@ -1390,7 +1519,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       readonly: false,
                       isFlex: isFlex,
                     ),
-                  if (widget.type == 2 || widget.type == 3)
+                  if (widget.transaction.transactionType == 2 ||
+                      widget.transaction.transactionType == 3)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: Row(
@@ -1429,7 +1559,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                         ],
                       ),
                     ),
-                  if (widget.type == 2 || widget.type == 3)
+                  if (widget.transaction.transactionType == 2 ||
+                      widget.transaction.transactionType == 3)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: Row(
@@ -1499,7 +1630,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       ),
                     ),
 
-                  if (widget.type == 1 || widget.type == 3)
+                  if (widget.transaction.transactionType == 1 ||
+                      widget.transaction.transactionType == 3)
                     TransactionOperationSection(
                       title: "Detail Jasa",
                       operations: operations,
@@ -1513,7 +1645,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                       readonly: false,
                       isFlex: isFlex,
                     ),
-                  if (widget.type == 1 || widget.type == 3)
+                  if (widget.transaction.transactionType == 1 ||
+                      widget.transaction.transactionType == 3)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6.0),
                       child: Row(
@@ -1601,7 +1734,8 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
                                 style: AppTextStyles.headingBlue,
                               ),
                               Spacer(),
-                              if (isFlex && widget.type != 2)
+                              if (isFlex &&
+                                  widget.transaction.transactionType != 2)
                                 InkWell(
                                   onTap: _showPromptEditFinal,
                                   borderRadius: BorderRadius.circular(

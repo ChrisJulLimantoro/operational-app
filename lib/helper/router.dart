@@ -24,6 +24,7 @@ import 'package:operational_app/screen/stock_out_screen.dart';
 import 'package:operational_app/screen/store_detail_screen.dart';
 import 'package:operational_app/screen/transaction_add_screen.dart';
 import 'package:operational_app/screen/transaction_detail_screen.dart';
+import 'package:operational_app/screen/transaction_edit_screen.dart';
 import 'package:operational_app/screen/transaction_screen.dart';
 import 'package:operational_app/screen/category_screen.dart';
 import 'package:operational_app/screen/store_screen.dart';
@@ -135,8 +136,8 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/transaction-detail',
       builder: (context, state) {
-        final transaction = state.extra as Transaction;
-        return TransactionDetailScreen(transaction: transaction);
+        final transaction = state.extra as String;
+        return TransactionDetailScreen(transactionId: transaction);
       },
     ),
     GoRoute(
@@ -144,6 +145,13 @@ final GoRouter router = GoRouter(
       builder: (context, state) {
         final type = state.extra as int;
         return TransactionAddScreen(type: type);
+      },
+    ),
+    GoRoute(
+      path: '/transaction/edit',
+      builder: (context, state) {
+        final transaction = state.extra as Transaction;
+        return TransactionEditScreen(transaction: transaction);
       },
     ),
     GoRoute(

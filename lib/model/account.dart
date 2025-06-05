@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Account {
   final String id;
   final int code;

@@ -1,5 +1,3 @@
-import 'package:operational_app/model/store.dart';
-
 class Maction {
   final int id;
   final String action;

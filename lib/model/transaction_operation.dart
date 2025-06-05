@@ -1,5 +1,5 @@
 class TransactionOperation {
-  final String id;
+  String id;
   final String transactionId;
   final String operationId;
   final String type;

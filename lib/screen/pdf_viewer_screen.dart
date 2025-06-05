@@ -25,8 +25,8 @@ class PDFViewerScreen extends StatefulWidget {
 }
 
 class PDFViewerScreenState extends State<PDFViewerScreen> {
-  PDFViewController? _pdfViewController;
-  bool _isPDFLoaded = false;
+  // PDFViewController? _pdfViewController;
+  // bool _isPDFLoaded = false;
   String? filePath;
   int _totalPages = 0;
   int _currentPage = 0;
@@ -39,7 +39,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
 
   @override
   void dispose() {
-    _pdfViewController = null;
+    // _pdfViewController = null;
     super.dispose();
   }
 
@@ -114,9 +114,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
           newPath += "/Download";
           directory = Directory(newPath);
         } else {
-          directory = Directory(
-            '/storage/emulated/0/Download',
-          );
+          directory = Directory('/storage/emulated/0/Download');
         }
       } else if (Platform.isIOS) {
         // Safe internal directory for iOS
@@ -178,12 +176,12 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
                     swipeHorizontal: false,
                     onRender: (pages) {
                       setState(() {
-                        _isPDFLoaded = true;
+                        // _isPDFLoaded = true;
                         _totalPages = pages ?? 0;
                       });
                     },
                     onViewCreated: (PDFViewController pdfViewController) {
-                      _pdfViewController = pdfViewController;
+                      // _pdfViewController = pdfViewController;
                     },
                     onPageChanged: (currentPage, totalPages) {
                       setState(() {

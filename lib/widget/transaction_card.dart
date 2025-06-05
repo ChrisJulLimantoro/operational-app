@@ -28,9 +28,17 @@ class TransactionCard extends StatefulWidget {
 class _TransactionCardState extends State<TransactionCard> {
   late Transaction trans;
 
-Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) async {
+  Future<void> _approveDisapprove(
+    context,
+    prevStatus,
+    transactionType,
+    transId,
+  ) async {
     var newStatus = (prevStatus == 0) ? 1 : 0;
-    var message = newStatus == 1 ? 'Apakah anda yakin approve transaksi ${trans.code}' : 'Apakah anda yakin disapprove transaksi ${trans.code}';
+    var message =
+        newStatus == 1
+            ? 'Apakah anda yakin approve transaksi ${trans.code}'
+            : 'Apakah anda yakin disapprove transaksi ${trans.code}';
     // Submit Transaction
     NotificationHelper.showNotificationSheet(
       context: context,
@@ -41,23 +49,65 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
       secondaryButtonText: "Batalkan",
       onPrimaryPressed: () async {
         debugPrint('apprpve lanjut');
-        final response = await TransactionAPI.approveDisapprove(context, newStatus, transId);
+        final response = await TransactionAPI.approveDisapprove(
+          context,
+          newStatus,
+          transId,
+        );
         debugPrint(response.toString());
         if (response) {
           NotificationHelper.showNotificationSheet(
             context: context,
             title: "Berhasil",
-            message: "Transaksi berhasil di-${newStatus == 1 ? 'approve' : 'disapprove'}",
+            message:
+                "Transaksi berhasil di-${newStatus == 1 ? 'approve' : 'disapprove'}",
             icon: Icons.check_circle_outline,
             primaryColor: AppColors.success,
             primaryButtonText: "OK",
             onPrimaryPressed: () {
-              Provider.of<SalesNotifier>(context, listen: false).markForRefresh();
-              context.pop();
+              Provider.of<SalesNotifier>(
+                context,
+                listen: false,
+              ).markForRefresh();
             },
           );
         }
+      },
+    );
+  }
 
+  Future<void> _deleteTransaction(context, transactionId) async {
+    // Submit Transaction
+    NotificationHelper.showNotificationSheet(
+      context: context,
+      title: "Konfirmasi",
+      primaryColor: AppColors.pinkPrimary,
+      message: 'Apakah anda yakin menghapus transaksi',
+      primaryButtonText: "Ya",
+      secondaryButtonText: "Batalkan",
+      onPrimaryPressed: () async {
+        debugPrint('delete lanjut');
+        final response = await TransactionAPI.deleteTransaction(
+          context,
+          transactionId,
+        );
+        debugPrint(response.toString());
+        if (response) {
+          NotificationHelper.showNotificationSheet(
+            context: context,
+            title: "Berhasil",
+            message: "Transaksi berhasil dihapus",
+            icon: Icons.check_circle_outline,
+            primaryColor: AppColors.success,
+            primaryButtonText: "OK",
+            onPrimaryPressed: () {
+              Provider.of<SalesNotifier>(
+                context,
+                listen: false,
+              ).markForRefresh();
+            },
+          );
+        }
       },
     );
   }
@@ -78,7 +128,7 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
         onTap:
             () => {
               if (widget.actions.contains('detail'))
-                {context.push('/transaction-detail', extra: trans)},
+                {context.push('/transaction-detail', extra: trans.id)},
             },
         borderRadius: BorderRadius.circular(8),
 
@@ -104,25 +154,26 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                       spacing: 8,
                       children: [
                         // Delete Button
-                        // trans.approve == 0 && widget.actions.contains('delete')
-                        //     ? Container(
-                        //       height: 32,
-                        //       width: 48,
-                        //       decoration: BoxDecoration(
-                        //         color: AppColors.error,
-                        //         borderRadius: BorderRadius.circular(8),
-                        //       ),
-                        //       child: IconButton(
-                        //         icon: Icon(CupertinoIcons.delete),
-                        //         iconSize: 16.0,
-                        //         color: AppColors.textWhite,
-                        //         padding: EdgeInsets.all(0),
-                        //         onPressed: () {
-                        //           debugPrint("Approve Button Clicked");
-                        //         },
-                        //       ),
-                        //     )
-                        //     : SizedBox(),
+                        trans.approve == 0 && widget.actions.contains('delete')
+                            ? Container(
+                              height: 32,
+                              width: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.error,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: IconButton(
+                                icon: Icon(CupertinoIcons.delete),
+                                iconSize: 16.0,
+                                color: AppColors.textWhite,
+                                padding: EdgeInsets.all(0),
+                                onPressed: () {
+                                  debugPrint("Approve Button Clicked");
+                                  _deleteTransaction(context, trans.id);
+                                },
+                              ),
+                            )
+                            : SizedBox(),
                         // Approve/Disapprove Button
                         trans.approve == 0 && widget.actions.contains('approve')
                             ? Container(
@@ -137,11 +188,17 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                                 iconSize: 16.0,
                                 color: AppColors.textWhite,
                                 padding: EdgeInsets.all(0),
-                                onPressed:  () async {
+                                onPressed: () async {
                                   debugPrint("Approve Button Clicked");
-                                  debugPrint(this.trans.transactionType.toString());              
-                                  _approveDisapprove(context,trans.approve, this.trans.transactionType, trans.id);
-                  
+                                  debugPrint(
+                                    this.trans.transactionType.toString(),
+                                  );
+                                  _approveDisapprove(
+                                    context,
+                                    trans.approve,
+                                    this.trans.transactionType,
+                                    trans.id,
+                                  );
                                 },
                               ),
                             )
@@ -161,7 +218,12 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                                 padding: EdgeInsets.all(0),
                                 onPressed: () {
                                   debugPrint("Disapprove Button Clicked");
-                                  _approveDisapprove(context,trans.approve, this.trans.transactionType, trans.id);
+                                  _approveDisapprove(
+                                    context,
+                                    trans.approve,
+                                    this.trans.transactionType,
+                                    trans.id,
+                                  );
                                 },
                               ),
                             )
@@ -242,16 +304,52 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                 const Divider(color: Colors.grey, thickness: 0.3),
 
                 // Sales Details (Only if Products Exist)
-                if (trans.transactionProducts.isNotEmpty) ...[
+                if (trans.transactionProducts
+                    .where((tp) => tp.transactionType == 1)
+                    .isNotEmpty) ...[
                   Text("Penjualan", style: AppTextStyles.labelPink),
                   Column(
                     children:
                         trans.transactionProducts
+                            .where((tp) => tp.transactionType == 1)
                             .map(
                               (product) =>
                                   product.productCodeId != ''
                                       ? ItemCardDetail(
-                                        name: product.name.split(' - ').length > 2 ? product.name.split(' - ')[1] : '',
+                                        name:
+                                            product.name.split(' - ').length >=
+                                                    2
+                                                ? product.name.split(' - ')[1]
+                                                : '',
+                                        code: product.name.split(' - ')[0],
+                                        totalPrice: product.totalPrice,
+                                      )
+                                      : ItemCardDetail(
+                                        name: 'Outside Product',
+                                        code: '${product.weight} gr',
+                                        totalPrice: product.totalPrice,
+                                      ),
+                            )
+                            .toList(),
+                  ),
+                ],
+                if (trans.transactionProducts
+                    .where((tp) => tp.transactionType == 2)
+                    .isNotEmpty) ...[
+                  Text("Pembelian", style: AppTextStyles.labelPink),
+                  Column(
+                    children:
+                        trans.transactionProducts
+                            .where((tp) => tp.transactionType == 2)
+                            .map(
+                              (product) =>
+                                  product.productCodeId != ''
+                                      ? ItemCardDetail(
+                                        name:
+                                            product.name.split(' - ').length >=
+                                                    2
+                                                ? product.name.split(' - ')[1]
+                                                : '',
                                         code: product.name.split(' - ')[0],
                                         totalPrice: product.totalPrice,
                                       )
@@ -271,7 +369,10 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                         trans.transactionOperations
                             .map(
                               (operation) => ItemCardDetail(
-                                name: operation.name.split(' - ').length > 1 ?  operation.name.split(' - ')[1] : '',
+                                name:
+                                    operation.name.split(' - ').length > 1
+                                        ? operation.name.split(' - ')[1]
+                                        : '',
                                 code: operation.name.split(' - ')[0],
                                 totalPrice: operation.totalPrice,
                               ),
@@ -297,7 +398,10 @@ Future<void> _approveDisapprove(context, prevStatus, transactionType, transId) a
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Tax", style: AppTextStyles.labelBlueItalic),
+                    Text(
+                      "Tax (${trans.taxPercent}%)",
+                      style: AppTextStyles.labelBlueItalic,
+                    ),
                     Text(
                       CurrencyHelper.formatRupiah(trans.taxPrice),
                       style: AppTextStyles.labelPink,

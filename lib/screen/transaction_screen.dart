@@ -120,7 +120,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
             limit: 10,
             search: search.text,
           );
-
+      debugPrint('Fetched ${latestTransactions.length} new transactions');
       if (latestTransactions.isNotEmpty) {
         transactions.addAll(latestTransactions);
         _groupTransactions();

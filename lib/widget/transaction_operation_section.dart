@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:operational_app/model/transaction_operation.dart';
-import 'package:operational_app/theme/colors.dart';
 import 'package:operational_app/theme/text.dart';
-import 'package:operational_app/widget/item_card_detail.dart';
 import 'package:operational_app/widget/text_card_detail.dart';
 import 'package:operational_app/widget/transaction_operation_detail_card.dart';
 
