@@ -680,6 +680,7 @@ class _TransactionEditScreenState extends State<TransactionEditScreen> {
         adjustmentPrice: 0.0,
         totalPrice: op.price,
         comment: "",
+        operation: op,
       );
       // Insert new Transaction Details
       Map<String, dynamic> insert = {

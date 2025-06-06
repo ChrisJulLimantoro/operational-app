@@ -14,7 +14,12 @@ import 'package:provider/provider.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   final String transactionId;
-  const TransactionDetailScreen({super.key, required this.transactionId});
+  final List<String> actions;
+  const TransactionDetailScreen({
+    super.key,
+    required this.transactionId,
+    required this.actions,
+  });
 
   @override
   State<TransactionDetailScreen> createState() =>
@@ -164,44 +169,46 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   Row(
                     spacing: 8,
                     children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            GoRouter.of(
-                              context,
-                            ).push('/transaction/edit', extra: transaction);
-                          },
-                          child: Container(
-                            height: 50,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.bluePrimary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              "Edit Transaksi",
-                              style: AppTextStyles.labelWhite,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: _viewNota,
-                          child: Container(
-                            height: 50,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: AppColors.pinkPrimary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              "Delete Transaksi",
-                              style: AppTextStyles.labelWhite,
+                      if (widget.actions.contains('edit'))
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              GoRouter.of(
+                                context,
+                              ).push('/transaction/edit', extra: transaction);
+                            },
+                            child: Container(
+                              height: 50,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.bluePrimary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                "Edit Transaksi",
+                                style: AppTextStyles.labelWhite,
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      if (widget.actions.contains('delete'))
+                        Expanded(
+                          child: InkWell(
+                            onTap: _viewNota,
+                            child: Container(
+                              height: 50,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.pinkPrimary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                "Delete Transaksi",
+                                style: AppTextStyles.labelWhite,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   Row(

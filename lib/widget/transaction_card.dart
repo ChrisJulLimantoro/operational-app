@@ -77,6 +77,17 @@ class _TransactionCardState extends State<TransactionCard> {
   }
 
   Future<void> _deleteTransaction(context, transactionId) async {
+    if (!widget.actions.contains('delete')) {
+      NotificationHelper.showNotificationSheet(
+        context: context,
+        title: 'Gagal',
+        primaryColor: AppColors.error,
+        icon: Icons.error_outline_rounded,
+        message: 'Anda tidak memiliki ijin!',
+        primaryButtonText: 'OK',
+        onPrimaryPressed: () {},
+      );
+    }
     // Submit Transaction
     NotificationHelper.showNotificationSheet(
       context: context,
@@ -128,7 +139,12 @@ class _TransactionCardState extends State<TransactionCard> {
         onTap:
             () => {
               if (widget.actions.contains('detail'))
-                {context.push('/transaction-detail', extra: trans.id)},
+                {
+                  context.push(
+                    '/transaction-detail',
+                    extra: {'transaction': trans.id, 'actions': widget.actions},
+                  ),
+                },
             },
         borderRadius: BorderRadius.circular(8),
 
@@ -189,10 +205,6 @@ class _TransactionCardState extends State<TransactionCard> {
                                 color: AppColors.textWhite,
                                 padding: EdgeInsets.all(0),
                                 onPressed: () async {
-                                  debugPrint("Approve Button Clicked");
-                                  debugPrint(
-                                    this.trans.transactionType.toString(),
-                                  );
                                   _approveDisapprove(
                                     context,
                                     trans.approve,
@@ -217,7 +229,6 @@ class _TransactionCardState extends State<TransactionCard> {
                                 color: AppColors.textWhite,
                                 padding: EdgeInsets.all(0),
                                 onPressed: () {
-                                  debugPrint("Disapprove Button Clicked");
                                   _approveDisapprove(
                                     context,
                                     trans.approve,
@@ -321,7 +332,8 @@ class _TransactionCardState extends State<TransactionCard> {
                                                     2
                                                 ? product.name.split(' - ')[1]
                                                 : '',
-                                        code: product.name.split(' - ')[0],
+                                        code:
+                                            '${product.name.split(' - ')[0]} x${product.weight} gr',
                                         totalPrice: product.totalPrice,
                                       )
                                       : ItemCardDetail(
@@ -350,7 +362,8 @@ class _TransactionCardState extends State<TransactionCard> {
                                                     2
                                                 ? product.name.split(' - ')[1]
                                                 : '',
-                                        code: product.name.split(' - ')[0],
+                                        code:
+                                            '${product.name.split(' - ')[0]} x${product.weight} gr',
                                         totalPrice: product.totalPrice,
                                       )
                                       : ItemCardDetail(
@@ -373,7 +386,8 @@ class _TransactionCardState extends State<TransactionCard> {
                                     operation.name.split(' - ').length > 1
                                         ? operation.name.split(' - ')[1]
                                         : '',
-                                code: operation.name.split(' - ')[0],
+                                code:
+                                    '${operation.name.split(' - ')[0]} x${operation.unit} ${operation.operation.uom}',
                                 totalPrice: operation.totalPrice,
                               ),
                             )

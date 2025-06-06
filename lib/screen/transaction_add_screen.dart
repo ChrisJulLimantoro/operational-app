@@ -675,6 +675,7 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
         adjustmentPrice: 0.0,
         totalPrice: op.price,
         comment: "",
+        operation: op,
       );
       setState(() {
         operations.add(to);
@@ -1049,16 +1050,6 @@ class _TransactionAddScreenState extends State<TransactionAddScreen> {
     _fetchConfig();
     _fetchAccounts();
     debugPrint('transaction type: ${widget.type}');
-    // Initialize items Details
-    // itemSold =
-    //     widget.transaction.transactionProducts
-    //         .where((item) => item.transactionType == 1)
-    //         .toList();
-    // itemBought =
-    //     widget.transaction.transactionProducts
-    //         .where((item) => item.transactionType == 2)
-    //         .toList();
-    // operations = widget.transaction.transactionOperations;
   }
 
   @override

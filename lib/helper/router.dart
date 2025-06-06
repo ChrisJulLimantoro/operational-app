@@ -139,8 +139,13 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/transaction-detail',
       builder: (context, state) {
-        final transaction = state.extra as String;
-        return TransactionDetailScreen(transactionId: transaction);
+        final data = state.extra as Map<String, dynamic>;
+        final transaction = data['transaction'];
+        final actions = data['actions'];
+        return TransactionDetailScreen(
+          transactionId: transaction,
+          actions: actions,
+        );
       },
     ),
     GoRoute(

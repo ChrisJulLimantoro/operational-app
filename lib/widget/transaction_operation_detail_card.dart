@@ -104,7 +104,8 @@ class _TransactionDetailCardState
                 children: [
                   TextCardDetail(
                     label: 'Jumlah',
-                    value: '${widget.transactionOperation.unit} mm',
+                    value:
+                        '${widget.transactionOperation.unit} ${widget.transactionOperation.operation.uom}',
                     type: "string",
                   ),
                   TextCardDetail(

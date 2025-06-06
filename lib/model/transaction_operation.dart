@@ -1,3 +1,5 @@
+import 'package:operational_app/model/operation.dart';
+
 class TransactionOperation {
   String id;
   final String transactionId;
@@ -9,6 +11,7 @@ class TransactionOperation {
   double adjustmentPrice;
   double totalPrice;
   final String comment;
+  Operation operation;
 
   TransactionOperation({
     required this.id,
@@ -21,6 +24,7 @@ class TransactionOperation {
     required this.adjustmentPrice,
     required this.totalPrice,
     required this.comment,
+    required this.operation,
   });
 
   factory TransactionOperation.fromJSON(Map<String, dynamic> json) {
@@ -35,6 +39,7 @@ class TransactionOperation {
       adjustmentPrice: double.tryParse(json['adjustment_price']) ?? 0.0,
       totalPrice: double.tryParse(json['total_price']) ?? 0.0,
       comment: json['comment'] ?? '-',
+      operation: Operation.fromJSON(json['operation']),
     );
   }
 
