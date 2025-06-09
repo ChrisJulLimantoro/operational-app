@@ -130,7 +130,7 @@ class StockOpnameAPI {
     String code,
   ) async {
     try {
-      final response = await ApiHelper.post(
+      final response = await ApiHelper.put(
         context,
         '/inventory/stock-opname-detail/$stockOpnameId',
         data: {'product_code_id': code, 'scanned': true},
