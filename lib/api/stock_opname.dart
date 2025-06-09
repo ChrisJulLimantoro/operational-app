@@ -133,7 +133,7 @@ class StockOpnameAPI {
       final response = await ApiHelper.post(
         context,
         '/inventory/stock-opname-detail/$stockOpnameId',
-        data: {'product_code': code, 'scanned': true},
+        data: {'product_code_id': code, 'scanned': true},
       );
 
       if (!response.data['success']) {

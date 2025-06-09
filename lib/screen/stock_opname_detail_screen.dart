@@ -78,6 +78,27 @@ class _StockOpnameDetailScreenState extends State<StockOpnameDetailScreen> {
               onPrimaryPressed: () {},
             );
           } else {
+            if (stockOpnameDetails[index]['status'] == 1) {
+              final res = await NotificationHelper.showConfirmationDialog(
+                context: context,
+                title: "Apakah Yakin?",
+                message:
+                    "Barang Telah dijual, apakah anda yakin masih ada di stok ?",
+              );
+              if (res ?? true) {
+                return;
+              }
+            } else if (stockOpnameDetails[index]['status'] == 3) {
+              final res = await NotificationHelper.showConfirmationDialog(
+                context: context,
+                title: "Apakah Yakin?",
+                message:
+                    "Barang Telah dikeluarkan, apakah anda yakin masih ada di stok ?",
+              );
+              if (res ?? true) {
+                return;
+              }
+            }
             final response = await StockOpnameAPI.scanProduct(
               context,
               widget.stockOpname.id,
