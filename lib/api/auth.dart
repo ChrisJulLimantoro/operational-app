@@ -30,6 +30,19 @@ class AuthAPI {
 
       if (responseData.containsKey('success') &&
           responseData['success'] == true) {
+        // if still waiting for verification show notification
+        if (responseData['data']['requiresVerification']) {
+          NotificationHelper.showNotificationSheet(
+            context: context,
+            title: 'Anda belum memverifikasi email anda!',
+            message:
+                'Email telah dikirim, mohon lakukan tahapan verifikasi terlebih dahulu!',
+            primaryButtonText: 'Oke',
+            primaryColor: AppColors.bluePrimary,
+            onPrimaryPressed: () {},
+          );
+          return false;
+        }
         final data = responseData['data'];
         debugPrint(data.toString());
 
