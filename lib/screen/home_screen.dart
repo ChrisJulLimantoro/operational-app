@@ -161,6 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
             "route": "/payout",
             "feature": "marketplace/balance",
           },
+          {
+            "title": "Chat",
+            "icon": Icons.chat,
+            "route": "/chat",
+            "feature": "marketplace/chat",
+          },
         ],
       },
     ],

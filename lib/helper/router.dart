@@ -9,6 +9,7 @@ import 'package:operational_app/screen/active_store_screen.dart';
 import 'package:operational_app/screen/bank_account_screen.dart';
 import 'package:operational_app/screen/category_detail_screen.dart';
 import 'package:operational_app/screen/change_password_screen.dart';
+import 'package:operational_app/screen/chat_screen.dart';
 import 'package:operational_app/screen/employee_screen.dart';
 import 'package:operational_app/screen/home_screen.dart';
 import 'package:operational_app/screen/login_screen.dart';
@@ -192,9 +193,7 @@ final GoRouter router = GoRouter(
       path: '/bank-account',
       builder: (context, state) => const BankAccountScreen(),
     ),
-    GoRoute(
-      path: '/payout',
-      builder: (context, state) => const PayoutScreen(),
-    ),
+    GoRoute(path: '/payout', builder: (context, state) => const PayoutScreen()),
+    GoRoute(path: '/chat', builder: (context, state) => StoreChatScreen()),
   ],
 );

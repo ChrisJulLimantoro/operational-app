@@ -56,11 +56,13 @@ class _PayoutScreenState extends State<PayoutScreen> {
         setState(() {
           _currentBalance = data.balance;
 
-          _payoutRequests = data.payoutRequests.toList()
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _payoutRequests =
+              data.payoutRequests.toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-          _balanceLogs = data.balanceLogs.toList()
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _balanceLogs =
+              data.balanceLogs.toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         });
       }
     } catch (e) {
@@ -84,10 +86,12 @@ class _PayoutScreenState extends State<PayoutScreen> {
       if (data != null) {
         setState(() {
           _currentBalance = data.balance;
-          _payoutRequests = data.payoutRequests.toList()
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-          _balanceLogs = data.balanceLogs.toList()
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _payoutRequests =
+              data.payoutRequests.toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _balanceLogs =
+              data.balanceLogs.toList()
+                ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         });
       }
     } catch (e) {
@@ -137,13 +141,15 @@ class _PayoutScreenState extends State<PayoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredPayouts = _payoutRequests.where((req) {
-      return true;
-    }).toList();
+    final filteredPayouts =
+        _payoutRequests.where((req) {
+          return true;
+        }).toList();
 
-    final filteredBalanceLogs = _balanceLogs.where((log) {
-      return true;
-    }).toList();
+    final filteredBalanceLogs =
+        _balanceLogs.where((log) {
+          return true;
+        }).toList();
 
     return Scaffold(
       body: Stack(
@@ -159,8 +165,10 @@ class _PayoutScreenState extends State<PayoutScreen> {
                 elevation: 0,
                 title: Text('Store Balance', style: AppTextStyles.headingWhite),
                 leading: IconButton(
-                  icon: const Icon(CupertinoIcons.arrow_left,
-                      color: Colors.white),
+                  icon: const Icon(
+                    CupertinoIcons.arrow_left,
+                    color: Colors.white,
+                  ),
                   onPressed: () {
                     _scroll.jumpTo(0);
                     context.pop();
@@ -169,8 +177,10 @@ class _PayoutScreenState extends State<PayoutScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -238,21 +248,23 @@ class _PayoutScreenState extends State<PayoutScreen> {
                                       Align(
                                         alignment: Alignment.centerRight,
                                         child: ElevatedButton(
-                                          onPressed: () => _showProof(
-                                              'http://127.0.0.1:3000/${request.proof!}'),
+                                          onPressed:
+                                              () => _showProof(
+                                                'http://192.168.1.10:3000/${request.proof!}',
+                                              ),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor:
                                                 AppColors.pinkPrimary,
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 8),
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
                                           ),
-                                          child: Text(
-                                            'Lihat Bukti',
-                                          ),
+                                          child: Text('Lihat Bukti'),
                                         ),
                                       ),
                                   ],
@@ -274,9 +286,7 @@ class _PayoutScreenState extends State<PayoutScreen> {
                         Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Center(
-                            child: Text(
-                              'Tidak ada log saldo ditemukan.',
-                            ),
+                            child: Text('Tidak ada log saldo ditemukan.'),
                           ),
                         )
                       else
@@ -303,9 +313,10 @@ class _PayoutScreenState extends State<PayoutScreen> {
                                       value: log.type,
                                       type: 'text',
                                       textStyle: TextStyle(
-                                        color: log.type == 'INCOME'
-                                            ? Colors.green
-                                            : Colors.red,
+                                        color:
+                                            log.type == 'INCOME'
+                                                ? Colors.green
+                                                : Colors.red,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -337,8 +348,10 @@ class _PayoutScreenState extends State<PayoutScreen> {
                   _balanceLogs.isEmpty)
                 SliverFillRemaining(
                   child: Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.bluePrimary)),
+                    child: CircularProgressIndicator(
+                      color: AppColors.bluePrimary,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -367,30 +380,34 @@ class _PayoutScreenState extends State<PayoutScreen> {
                           const SizedBox(height: 16),
                           _proofImageUrl.isNotEmpty
                               ? Image.network(
-                                  _proofImageUrl,
-                                  fit: BoxFit.contain,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                    .cumulativeBytesLoaded /
-                                                loadingProgress
-                                                    .expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Text(
-                                        'Gagal memuat gambar bukti.',
-                                        style: TextStyle(color: Colors.red));
-                                  },
-                                )
+                                _proofImageUrl,
+                                fit: BoxFit.contain,
+                                loadingBuilder: (
+                                  context,
+                                  child,
+                                  loadingProgress,
+                                ) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Text(
+                                    'Gagal memuat gambar bukti.',
+                                    style: TextStyle(color: Colors.red),
+                                  );
+                                },
+                              )
                               : const Text('Tidak ada bukti tersedia.'),
                           const SizedBox(height: 16),
                           ElevatedButton(
@@ -398,9 +415,7 @@ class _PayoutScreenState extends State<PayoutScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.pinkPrimary,
                             ),
-                            child: Text(
-                              'Tutup',
-                            ),
+                            child: Text('Tutup'),
                           ),
                         ],
                       ),
