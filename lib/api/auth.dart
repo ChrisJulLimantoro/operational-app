@@ -31,7 +31,7 @@ class AuthAPI {
       if (responseData.containsKey('success') &&
           responseData['success'] == true) {
         // if still waiting for verification show notification
-        if (responseData['data']['requiresVerification']) {
+        if (responseData['data']?['requiresVerification'] ?? false) {
           NotificationHelper.showNotificationSheet(
             context: context,
             title: 'Anda belum memverifikasi email anda!',

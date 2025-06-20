@@ -9,10 +9,10 @@ import 'package:operational_app/helper/router.dart';
 class ApiHelper {
   static Dio dio = Dio(
       // BaseOptions(baseUrl: 'http://192.168.0.104:3000'), // IP FOR WIFI GACOR
-      BaseOptions(baseUrl: 'http://127.0.0.1:3000'), //local IP for testing
+      // BaseOptions(baseUrl: 'http://127.0.0.1:3000'), //local IP for testing
       // BaseOptions(baseUrl: 'http://10.0.2.2:3000'), // Buat android
       // BaseOptions(baseUrl: 'http://192.168.110.112:3000'),
-      // BaseOptions(baseUrl: 'http://172.16.251.16:3000'),
+      BaseOptions(baseUrl: 'http://172.20.10.2:3000'),
     ) //local IP for testing
     ..interceptors.add(
       InterceptorsWrapper(

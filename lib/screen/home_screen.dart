@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
             "icon": Icons.manage_search,
             "route": "/check-product",
             "feature": "inventory/check-product",
-          }
+          },
         ],
       },
       {
@@ -163,14 +163,14 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ],
       },
-    ]
+    ],
   };
 
   final List<Color> _tabColors = [
     AppColors.bluePrimary, // Master
     AppColors.pinkPrimary, // Transaksi
     AppColors.pinkPrimary, // Laporan
-    AppColors.pinkPrimary //Marketplace
+    AppColors.pinkPrimary, //Marketplace
   ];
 
   void _onItemTapped(int index) {
@@ -266,9 +266,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text(
-                        "${activeStore?.code ?? "-"} | ${activeStore?.name ?? "-"}",
-                        style: AppTextStyles.headingWhite,
+                      Expanded(
+                        child: Text(
+                          "${activeStore?.code ?? "-"} | ${activeStore?.name ?? "-"}",
+                          style: AppTextStyles.headingWhite,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
+                        ),
+                        flex: 3,
                       ),
                       IconButton(
                         icon: const Icon(
@@ -341,9 +346,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     )
                                   else
-                                    for (var i = 0;
-                                        i < filteredMenu[x]['items'].length;
-                                        i += 3)
+                                    for (
+                                      var i = 0;
+                                      i < filteredMenu[x]['items'].length;
+                                      i += 3
+                                    )
                                       Padding(
                                         padding: const EdgeInsets.only(
                                           bottom: 24.0,
@@ -415,9 +422,9 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Build a menu button
   Widget _buildMenuItem(Map<String, dynamic> item) {
     final condition = context.read<PermissionCubit>().state.hasPermission(
-          item["feature"],
-          'open',
-        );
+      item["feature"],
+      'open',
+    );
     return InkWell(
       onTap: () {
         // Check if the user has permission to access this feature
@@ -432,9 +439,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: condition
-                  ? _tabColors[_selectedTabIndex]
-                  : Colors.grey.shade600,
+              color:
+                  condition
+                      ? _tabColors[_selectedTabIndex]
+                      : Colors.grey.shade600,
               shape: BoxShape.circle,
             ),
             child: Icon(
