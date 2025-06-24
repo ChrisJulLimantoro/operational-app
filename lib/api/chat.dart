@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
 import 'package:operational_app/model/conversation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -14,8 +15,8 @@ import 'package:operational_app/model/message.dart';
 enum ConnectionStatus { connecting, connected, disconnected, error }
 
 class ChatService {
-  static const String baseURL = 'http://192.168.1.10:3001/api';
-  static const String chatServiceURL = 'http://192.168.1.10:3001';
+  static String baseURL = '${dotenv.env['CHAT_URL']}/api';
+  static String chatServiceURL = '${dotenv.env['CHAT_URL']}';
 
   late final Dio _dio;
   IO.Socket? socket;
@@ -147,11 +148,12 @@ class ChatService {
     socket!.on('new_message', (data) {
       final message = Message.fromJson(data);
       // Only process messages from customers (not from this store)
-      if (message.senderType != 'store') {
-        _newMessageController.add(message);
-        // Refresh conversations list
-        // loadConversations();
-      }
+      debugPrint('Messages received $message');
+      // if (message.senderType != 'store') {
+      _newMessageController.add(message);
+      // Refresh conversations list
+      // loadConversations();
+      // }
     });
 
     socket!.on('conversation_updated', (_) {

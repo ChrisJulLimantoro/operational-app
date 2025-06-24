@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:operational_app/helper/auth_storage.dart';
 import 'package:operational_app/bloc/auth_bloc.dart';
@@ -11,7 +12,7 @@ class ApiHelper {
       // BaseOptions(baseUrl: 'http://192.168.0.104:3000'), // IP FOR WIFI GACOR
       // BaseOptions(baseUrl: 'http://127.0.0.1:3000'), //local IP for testing
       // BaseOptions(baseUrl: 'http://10.0.2.2:3000'), // Buat android
-      BaseOptions(baseUrl: 'http://192.168.1.10:3000'),
+      BaseOptions(baseUrl: '${dotenv.env['URL']}'),
       // BaseOptions(baseUrl: 'http://172.20.10.2:3000'),
     ) //local IP for testing
     ..interceptors.add(

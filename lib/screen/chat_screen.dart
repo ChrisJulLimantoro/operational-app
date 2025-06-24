@@ -139,7 +139,7 @@ class _StoreChatScreenState extends State<StoreChatScreen> {
       );
 
       setState(() {
-        messages.add(message);
+        // messages.add(message);
         isSending = false;
       });
       _scrollToBottom();
