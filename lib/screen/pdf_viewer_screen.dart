@@ -47,7 +47,7 @@ class PDFViewerScreenState extends State<PDFViewerScreen> {
     try {
       var response = await ApiHelper.get(
         context,
-        '/nota/${widget.pdfUrl}',
+        '/transaction/transaction-nota/${widget.pdfUrl}',
         options: Options(responseType: ResponseType.bytes),
       );
 
